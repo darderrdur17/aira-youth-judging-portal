@@ -7,13 +7,16 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Mail, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react'
+import { Mail, ArrowLeft, CheckCircle, Loader2, Users } from 'lucide-react'
 import { toast } from 'sonner'
+import { DEMO_JUDGES } from '@/lib/demo-data'
+import { useSessionStore } from '@/store/sessionStore'
 
 export default function LoginContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const role = searchParams.get('role') ?? 'judge'
+  const session = useSessionStore()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
@@ -22,8 +25,12 @@ export default function LoginContent() {
 
   const handleDemoLogin = () => {
     if (isOrganiser) {
+      session.setDemoOrganiser()
       router.push('/organiser/dashboard')
     } else {
+      // default demo judge
+      const j = DEMO_JUDGES[0]
+      session.setDemoJudge({ id: j.id, name: j.name, email: j.email })
       router.push('/judge/dashboard')
     }
   }
@@ -152,6 +159,32 @@ export default function LoginContent() {
                   >
                     Enter {isOrganiser ? 'Organiser' : 'Judge'} Demo (no login required)
                   </Button>
+
+                  {!isOrganiser && (
+                    <div className="mt-3 rounded-lg border border-gray-100 bg-gray-50 p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Users size={14} className="text-[#1D9E8B]" />
+                        <p className="text-xs font-semibold text-[#1A2B3C]">Demo judge accounts</p>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2">
+                        {DEMO_JUDGES.map((j) => (
+                          <button
+                            key={j.id}
+                            type="button"
+                            onClick={() => {
+                              session.setDemoJudge({ id: j.id, name: j.name, email: j.email })
+                              toast.success(`Switched demo judge: ${j.name}`)
+                              router.push('/judge/dashboard')
+                            }}
+                            className="text-left bg-white border border-gray-200 rounded-md px-3 py-2 hover:border-[#1D9E8B] hover:bg-[#E1F5EE] transition-colors"
+                          >
+                            <p className="text-xs font-semibold text-[#1A2B3C]">{j.name}</p>
+                            <p className="text-[10px] text-gray-400">{j.email}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </form>
               )}
 

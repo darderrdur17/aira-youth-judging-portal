@@ -38,6 +38,7 @@ import {
 } from '@/lib/demo-data'
 import { computeWeightedScore, JUDGING_CRITERIA, TOTAL_MAX_SCORE } from '@/lib/types'
 import { useJudgeStore } from '@/store/judgeStore'
+import { useSessionStore } from '@/store/sessionStore'
 
 const SCORE_LABELS: Record<number, string> = {
   1: 'Very Poor', 2: 'Poor', 3: 'Below Average', 4: 'Adequate',
@@ -61,6 +62,7 @@ export default function ScoringPage() {
 
   // Seed initial state from demo data
   const store = useJudgeStore()
+  const session = useSessionStore()
   const state = store.getAssignment(assignmentId)
   const [hydrated, setHydrated] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -158,8 +160,9 @@ export default function ScoringPage() {
     )
   }
 
+  const judgeId = session.demo.judgeId ?? 'judge-001'
   const allAssignmentIds = DEMO_ASSIGNMENTS
-    .filter((a) => a.judge_id === 'judge-001')
+    .filter((a) => a.judge_id === judgeId)
     .map((a) => a.id)
   const currentIdx = allAssignmentIds.indexOf(assignmentId)
   const prevId = currentIdx > 0 ? allAssignmentIds[currentIdx - 1] : null

@@ -28,17 +28,20 @@ import {
 } from '@/lib/demo-data'
 import { computeWeightedScore, JUDGING_CRITERIA, TOTAL_MAX_SCORE } from '@/lib/types'
 import { useJudgeStore } from '@/store/judgeStore'
+import { useSessionStore } from '@/store/sessionStore'
 
 type SortMode = 'assigned' | 'score'
 type FilterTab = 'all' | 'pending' | 'judged' | 'flagged'
 
 export default function JudgeDashboardPage() {
   const store = useJudgeStore()
+  const session = useSessionStore()
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<FilterTab>('all')
   const [sort, setSort] = useState<SortMode>('assigned')
 
-  const myAssignments = DEMO_ASSIGNMENTS.filter((a) => a.judge_id === 'judge-001')
+  const judgeId = session.demo.judgeId ?? 'judge-001'
+  const myAssignments = DEMO_ASSIGNMENTS.filter((a) => a.judge_id === judgeId)
 
   const rows = myAssignments.map((assignment) => {
     const project = DEMO_PROJECTS.find((p) => p.id === assignment.project_id)!
