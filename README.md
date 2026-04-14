@@ -1,20 +1,39 @@
 # AI Ready ASEAN Youth Challenge 2026 — Judging Portal
 
-A purpose-built, full-stack competition judging platform for the AISG/ASEAN Foundation/Google.org hackathon — replacing ad-hoc spreadsheets with structured, auditable, real-time judging workflows.
+A purpose-built, full-stack competition judging platform for the AI Ready ASEAN Youth Challenge (AISG / ASEAN Foundation / Google.org, with IMDA, ATX Summit, and AI Singapore). It replaces ad-hoc spreadsheets and generic form tools with a single place to run **expert judging**, **organiser operations**, and **public voting** for the People’s Choice track.
+
+## What this project is
+
+The challenge invites youth teams across ASEAN to propose AI solutions for regional problems. This portal supports the **evaluation phase**: organisers configure the competition, judges score assigned submissions against a weighted rubric, and the broader community votes for favourites. Everything is structured for **fairness** (clear criteria, audit trail) and **visibility** (progress dashboards, ranked results).
+
+## Personas
+
+### Judges
+
+Judges are domain experts invited to the competition. They sign in (magic link in production), see only **projects assigned to them**, and score each submission on **eight criteria** from **1–10**. They can save progress, add private notes, write structured feedback for teams, and **submit** when every criterion is scored. After the judging **deadline**, scoring is read-only. The UI shows a **live weighted total** for the current submission so judges understand how criteria weights affect the outcome.
+
+### Organisers
+
+Organisers run the competition: they manage **projects** (create or import), **judges** (invite, activate/deactivate, reminders), and **assignments** (who judges which project). They monitor **completion and progress** per judge, open **ranked results** with per-judge breakdowns, export **CSV**, and review an **audit log** of score changes. They operate in the organiser portal; in production, access is tied to the user who created the competition (see RLS in `supabase-schema.sql`).
+
+### Voters (People’s Choice)
+
+Voters are members of the public (or any audience you expose the link to). They use the **People’s Choice** flow (`/vote`): browse projects, search/filter by country, and support teams with votes. The UI allows **up to three projects** per person. In the current demo, voting uses **client-side state** (e.g. localStorage) with simulated totals; in a full rollout this would connect to your backend. Copy in the app states that **community voting contributes 20%** of the final competition score alongside **85%** from the judge rubric (see **Scoring logic** below).
 
 ## Quick Start
 
 ```bash
 npm install
-cp .env.local .env.local  # edit with your Supabase credentials
+# Add Supabase (and optional email) keys — see Production Setup
 npm run dev               # http://localhost:3000
 ```
 
 ## Demo Mode
 
 Open `http://localhost:3000` and click either:
-- **"Enter Judge Demo"** → `/judge/dashboard` — pre-loaded with 5 projects, 2 already scored
+- **"Enter Judge Demo"** → `/judge/dashboard` — pre-loaded with sample assignments and scores
 - **"Enter Organiser Demo"** → `/organiser/dashboard` — full competition management view
+- **People’s Choice Vote** → `/vote` — public voting UI (demo behaviour)
 
 No Supabase setup is required to explore the UI.
 
@@ -59,7 +78,33 @@ Set the same env vars in the Vercel dashboard under Settings → Environment Var
 
 ---
 
-## Judging Criteria (8 weighted, max 85 pts)
+## Scoring logic
+
+The competition uses two complementary parts that sum to **100%** in product terms: **judge-scored criteria (85%)** and **public engagement (20%)** via the People’s Choice vote. Judge criterion **weights are expressed in points that add up to 85** (same as 85% of the overall model); the public slice is **tracked separately** in the voting experience.
+
+### Judge-scored component (85 points max per judge, per project)
+
+For each **assignment** (one judge, one project), every criterion is scored as an integer **1–10**. The **weighted score** is:
+
+```text
+WeightedScore = Σ over criteria c of ( rawScore_c / 10 ) × weight_c
+```
+
+- `weight_c` is the criterion weight (e.g. 10 or 15). Weights sum to **85** (`TOTAL_MAX_SCORE` in code).
+- `rawScore_c` is the judge’s input from 1 to 10.
+- The **maximum** weighted total when all criteria are 10/10 is **85.0** (displayed to two decimal places in the UI).
+
+Implementation: `computeWeightedScore()` in `src/lib/types/index.ts`.
+
+**Example.** If *Problem Definition* = 8 (weight 10) and *AI Application* = 9 (weight 15), their contributions are `(8/10)×10 = 8.0` and `(9/10)×15 = 13.5` respectively. Repeat for all eight criteria and sum.
+
+**Aggregating multiple judges.** For a project, the organiser **results** view uses only assignments where **all** criteria are **submitted**, computes each judge’s `WeightedScore`, then summarises with **average** (and min/max across judges) for ranking. See `buildResults()` in `src/app/organiser/results/page.tsx`.
+
+### Public engagement (20%)
+
+Community votes support the **People’s Choice** outcome and, per challenge messaging, **20%** of the overall competition score. The judge rubric does **not** include this 20%; it is handled in the voting flow. How vote counts map to a 0–20 scale (e.g. normalising by share of votes) is a **policy choice** for the event; the demo UI focuses on ranking and participation.
+
+### Judging criteria (8 weighted)
 
 | # | Criterion | Weight |
 |---|---|---|
@@ -72,9 +117,7 @@ Set the same env vars in the Vercel dashboard under Settings → Environment Var
 | 7 | Practicality | 10% |
 | 8 | Effectiveness | 10% |
 
-> Public Engagement (20%) = community votes — not judge-scored.
-
-Formula: `Σ (score/10) × weight` → max 85.00 pts
+**Sum of weights:** 85 — aligns with the judge portion of the 85% + 20% model.
 
 ---
 
@@ -98,6 +141,10 @@ Formula: `Σ (score/10) × weight` → max 85.00 pts
 - CSV export (full scores + averages)
 - Audit log (immutable score history, exportable)
 
+### People’s Choice (voters)
+- Public project list with search and country filter
+- Vote interaction (demo: local persistence); messaging ties votes to the **20%** public slice of the overall score model
+
 ---
 
 ## File Structure
@@ -106,6 +153,7 @@ Formula: `Σ (score/10) × weight` → max 85.00 pts
 src/
 ├── app/
 │   ├── page.tsx                  # Landing page
+│   ├── vote/                     # People’s Choice (public voting)
 │   ├── auth/login/               # Magic link login
 │   ├── judge/
 │   │   ├── dashboard/            # Project grid + stats
