@@ -29,17 +29,26 @@ This guide walks you from a blank Supabase project to a fully operational judgin
 
 ## Step 2 — Run the Database Schema
 
-1. In your Supabase dashboard, click **SQL Editor** in the left sidebar
-2. Click **New query**
-3. Open the file `supabase-schema.sql` from this project root
-4. Copy the entire contents and paste into the SQL Editor
-5. Click **Run** (Ctrl/Cmd + Enter)
-6. You should see: `Success. No rows returned`
+### Fresh project (empty database)
 
-This creates all 8 tables, Row Level Security policies, triggers, and seeds the judging criteria.
+1. In your Supabase dashboard, click **SQL Editor** → **New query**
+2. Open `supabase-schema.sql` from this repo
+3. Paste the **entire** file and click **Run**
 
-> **Note:** After running, go to **Table Editor** and verify you can see these tables:
-> `competitions`, `criteria`, `projects`, `judges`, `assignments`, `scores`, `feedback`, `audit_log`
+This creates all tables, RLS, triggers, seed data, and `link_judge_to_user()`.
+
+> **Verify in Table Editor:** `competitions`, `criteria`, `projects`, `judges`, `assignments`, `scores`, `feedback`, `audit_log`
+
+### Already applied the schema? (Error: `relation "competitions" already exists`)
+
+**Do not re-run the full `supabase-schema.sql`.** That file is for first-time setup only.
+
+If you only need the post-login judge linker (e.g. you set up the DB before that function existed):
+
+1. SQL Editor → **New query**
+2. Open and run **`supabase/patch-link-judge-user.sql`** only
+
+That script is idempotent (`create or replace function`).
 
 ---
 
