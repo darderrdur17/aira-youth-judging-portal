@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { DEMO_SESSION_COOKIE } from '@/lib/auth/demo-session'
 
 export async function updateSession(request: NextRequest) {
   // Staging / walkthrough only: skip auth checks entirely (do NOT enable in production).
@@ -13,6 +14,19 @@ export async function updateSession(request: NextRequest) {
   // If Supabase env vars are missing (common on first Vercel deploy),
   // don't crash the entire app. Allow requests through (demo mode).
   if (!supabaseUrl || !supabaseAnonKey) {
+    return NextResponse.next({ request })
+  }
+
+  const { pathname: earlyPath } = request.nextUrl
+
+  // Always allow the demo-session API and public assets through before any Supabase call
+  if (earlyPath.startsWith('/api/auth/demo')) {
+    return NextResponse.next({ request })
+  }
+
+  // Demo cookie fast-path: bypass Supabase entirely for /judge and /organiser
+  const demoFast = request.cookies.get(DEMO_SESSION_COOKIE)?.value === '1'
+  if (demoFast && (earlyPath.startsWith('/judge') || earlyPath.startsWith('/organiser'))) {
     return NextResponse.next({ request })
   }
 

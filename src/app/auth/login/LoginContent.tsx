@@ -14,6 +14,21 @@ import { useSessionStore } from '@/store/sessionStore'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { sanitizeNextPath } from '@/lib/auth/sanitize-next'
 
+function mapOtpErrorMessage(message: string): string {
+  const m = message.toLowerCase()
+  if (
+    m.includes('confirmation email') ||
+    m.includes('error sending') ||
+    m.includes('email rate limit')
+  ) {
+    return (
+      'Could not send the login email. In the Supabase Dashboard open Authentication → SMTP (add a provider such as Resend) ' +
+      'and confirm Site URL / redirect URLs; then check Authentication → Logs for the exact error.'
+    )
+  }
+  return message
+}
+
 const ERROR_MESSAGES: Record<string, string> = {
   auth_failed: 'Could not verify the login link. Request a new magic link and try again.',
   no_code: 'Missing login code. Open the link from your email, or request a new magic link.',
@@ -31,6 +46,7 @@ export default function LoginContent() {
   const session = useSessionStore()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
+  const [demoLoading, setDemoLoading] = useState(false)
   const [sent, setSent] = useState(false)
 
   const isOrganiser = role === 'organiser'
@@ -42,14 +58,34 @@ export default function LoginContent() {
     '/judge/dashboard'
   )
 
-  const handleDemoLogin = () => {
-    if (isOrganiser) {
-      session.setDemoOrganiser()
-      router.push('/organiser/dashboard')
-    } else {
-      const j = DEMO_JUDGES[0]
-      session.setDemoJudge({ id: j.id, name: j.name, email: j.email })
-      router.push('/judge/dashboard')
+  const startPortalDemo = async (role: 'judge' | 'organiser') => {
+    const res = await fetch('/api/auth/demo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ role }),
+    })
+    if (!res.ok) {
+      throw new Error('Could not start demo session')
+    }
+  }
+
+  const handleDemoLogin = async () => {
+    setDemoLoading(true)
+    try {
+      if (isOrganiser) {
+        await startPortalDemo('organiser')
+        session.setDemoOrganiser()
+        window.location.href = '/organiser/dashboard'
+      } else {
+        const j = DEMO_JUDGES[0]
+        await startPortalDemo('judge')
+        session.setDemoJudge({ id: j.id, name: j.name, email: j.email })
+        window.location.href = '/judge/dashboard'
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Demo login failed')
+      setDemoLoading(false)
     }
   }
 
@@ -78,7 +114,7 @@ export default function LoginContent() {
       })
 
       if (error) {
-        toast.error(error.message)
+        toast.error(mapOtpErrorMessage(error.message))
         setLoading(false)
         return
       }
@@ -218,10 +254,18 @@ export default function LoginContent() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={handleDemoLogin}
-                    className="w-full border-dashed border-[#1D9E8B] text-[#1D9E8B] hover:bg-[#E1F5EE] text-sm"
+                    disabled={demoLoading}
+                    onClick={() => void handleDemoLogin()}
+                    className="w-full gap-2 border-dashed border-[#1D9E8B] text-[#1D9E8B] hover:bg-[#E1F5EE] text-sm"
                   >
-                    Enter {isOrganiser ? 'Organiser' : 'Judge'} Demo (no login required)
+                    {demoLoading ? (
+                      <>
+                        <Loader2 size={15} className="animate-spin" />
+                        Starting demo…
+                      </>
+                    ) : (
+                      <>Enter {isOrganiser ? 'Organiser' : 'Judge'} Demo (no login required)</>
+                    )}
                   </Button>
 
                   {!isOrganiser && (
@@ -231,20 +275,30 @@ export default function LoginContent() {
                         <p className="text-xs font-semibold text-[#1A2B3C]">Demo judge accounts</p>
                       </div>
                       <p className="text-[10px] text-gray-500 mb-2">
-                        For real login, the organiser must invite the same email in Supabase first. Demo picks skip
-                        Supabase when auth demo mode is on; otherwise use magic link.
+                        For real login, the organiser must invite the same email in Supabase first. Demo picks set a
+                        short-lived browser session so you can try the UI without magic link (no Supabase user).
                       </p>
                       <div className="grid grid-cols-1 gap-2">
                         {DEMO_JUDGES.map((j) => (
                           <button
                             key={j.id}
                             type="button"
+                            disabled={demoLoading}
                             onClick={() => {
-                              session.setDemoJudge({ id: j.id, name: j.name, email: j.email })
-                              toast.success(`Switched demo judge: ${j.name}`)
-                              router.push('/judge/dashboard')
+                              void (async () => {
+                                setDemoLoading(true)
+                                try {
+                                  await startPortalDemo('judge')
+                                  session.setDemoJudge({ id: j.id, name: j.name, email: j.email })
+                                  toast.success(`Switched demo judge: ${j.name}`)
+                                  window.location.href = '/judge/dashboard'
+                                } catch (e) {
+                                  toast.error(e instanceof Error ? e.message : 'Demo login failed')
+                                  setDemoLoading(false)
+                                }
+                              })()
                             }}
-                            className="text-left bg-white border border-gray-200 rounded-md px-3 py-2 hover:border-[#1D9E8B] hover:bg-[#E1F5EE] transition-colors"
+                            className="text-left bg-white border border-gray-200 rounded-md px-3 py-2 hover:border-[#1D9E8B] hover:bg-[#E1F5EE] transition-colors disabled:opacity-50"
                           >
                             <p className="text-xs font-semibold text-[#1A2B3C]">{j.name}</p>
                             <p className="text-[10px] text-gray-400">{j.email}</p>

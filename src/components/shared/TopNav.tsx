@@ -109,6 +109,11 @@ export function TopNav({
                 <DropdownMenuItem
                   className="text-red-600 text-xs gap-2 cursor-pointer"
                   onClick={async () => {
+                    try {
+                      await fetch('/api/auth/demo', { method: 'DELETE', credentials: 'include' })
+                    } catch {
+                      // ignore
+                    }
                     if (isSupabaseConfigured()) {
                       try {
                         const supabase = createClient()

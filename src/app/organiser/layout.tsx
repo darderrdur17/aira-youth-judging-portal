@@ -2,9 +2,25 @@ import { TopNav } from '@/components/shared/TopNav'
 import { isSupabaseConfigured } from '@/lib/supabase/config'
 import { createClient } from '@/lib/supabase/server'
 import { isOrganiserUser } from '@/lib/auth/organiser-access'
+import { DEMO_SESSION_COOKIE } from '@/lib/auth/demo-session'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 
 export default async function OrganiserLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies()
+  if (cookieStore.get(DEMO_SESSION_COOKIE)?.value === '1') {
+    return (
+      <div className="min-h-screen bg-[#F7F8FA]">
+        <TopNav
+          role="organiser"
+          userName="Organiser Admin"
+          userEmail="admin@airayouthchallenge.ai"
+        />
+        <main className="max-w-7xl mx-auto px-4 py-6">{children}</main>
+      </div>
+    )
+  }
+
   if (process.env.NEXT_PUBLIC_ENABLE_UNAUTHENTICATED_DEMO === 'true') {
     return (
       <div className="min-h-screen bg-[#F7F8FA]">

@@ -1,6 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 import { sanitizeNextPath } from '@/lib/auth/sanitize-next'
+import {
+  DEMO_SESSION_COOKIE,
+  DEMO_ROLE_COOKIE,
+  demoCookieOptions,
+} from '@/lib/auth/demo-session'
 
 export async function GET(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -48,6 +53,10 @@ export async function GET(request: NextRequest) {
     // RPC may not exist until SQL migration is applied — login still succeeds
     console.warn('link_judge_to_user:', linkError.message)
   }
+
+  // Real session replaces demo cookie
+  response.cookies.set(DEMO_SESSION_COOKIE, '', demoCookieOptions(0))
+  response.cookies.set(DEMO_ROLE_COOKIE, '', demoCookieOptions(0))
 
   return response
 }
