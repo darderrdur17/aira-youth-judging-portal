@@ -2,6 +2,11 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  // Staging / walkthrough only: skip auth checks entirely (do NOT enable in production).
+  if (process.env.NEXT_PUBLIC_ENABLE_UNAUTHENTICATED_DEMO === 'true') {
+    return NextResponse.next({ request })
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -39,12 +44,19 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Public routes that don't require auth
-  const publicRoutes = ['/', '/auth/login', '/auth/callback']
-  const isPublic = publicRoutes.some((r) => pathname === r || pathname.startsWith('/auth/'))
+  const publicRoutes = ['/', '/auth/login', '/auth/callback', '/vote']
+  const isPublic =
+    publicRoutes.some((r) => pathname === r || pathname.startsWith('/auth/')) ||
+    pathname.startsWith('/vote')
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
+    if (pathname.startsWith('/organiser')) {
+      url.searchParams.set('role', 'organiser')
+    } else {
+      url.searchParams.set('role', 'judge')
+    }
     return NextResponse.redirect(url)
   }
 

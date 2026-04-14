@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 
 
 interface TopNavProps {
@@ -105,7 +106,20 @@ export function TopNav({
                   {competitionName}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600 text-xs gap-2 cursor-pointer" onClick={() => { window.location.href = '/' }}>
+                <DropdownMenuItem
+                  className="text-red-600 text-xs gap-2 cursor-pointer"
+                  onClick={async () => {
+                    if (isSupabaseConfigured()) {
+                      try {
+                        const supabase = createClient()
+                        await supabase.auth.signOut()
+                      } catch {
+                        // ignore
+                      }
+                    }
+                    window.location.href = '/'
+                  }}
+                >
                   <LogOut size={13} />
                   Sign out
                 </DropdownMenuItem>

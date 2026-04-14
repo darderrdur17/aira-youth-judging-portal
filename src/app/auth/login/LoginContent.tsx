@@ -7,10 +7,22 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Mail, ArrowLeft, CheckCircle, Loader2, Users } from 'lucide-react'
+import { Mail, ArrowLeft, CheckCircle, Loader2, Users, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { DEMO_JUDGES } from '@/lib/demo-data'
 import { useSessionStore } from '@/store/sessionStore'
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
+import { sanitizeNextPath } from '@/lib/auth/sanitize-next'
+
+const ERROR_MESSAGES: Record<string, string> = {
+  auth_failed: 'Could not verify the login link. Request a new magic link and try again.',
+  no_code: 'Missing login code. Open the link from your email, or request a new magic link.',
+  missing_env: 'Server is missing Supabase configuration. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel.',
+  not_invited:
+    'No judge invitation found for this account. Ask the organiser to add your email under Judges, then try logging in again.',
+  forbidden:
+    'This account is not allowed to access the organiser portal. Set competitions.created_by to your user id, or add your email to ORGANISER_EMAILS in Vercel.',
+}
 
 export default function LoginContent() {
   const searchParams = useSearchParams()
@@ -22,13 +34,19 @@ export default function LoginContent() {
   const [sent, setSent] = useState(false)
 
   const isOrganiser = role === 'organiser'
+  const errorCode = searchParams.get('error')
+  const errorMessage = errorCode ? ERROR_MESSAGES[errorCode] ?? `Something went wrong (${errorCode}).` : null
+
+  const postLoginPath = sanitizeNextPath(
+    isOrganiser ? '/organiser/dashboard' : '/judge/dashboard',
+    '/judge/dashboard'
+  )
 
   const handleDemoLogin = () => {
     if (isOrganiser) {
       session.setDemoOrganiser()
       router.push('/organiser/dashboard')
     } else {
-      // default demo judge
       const j = DEMO_JUDGES[0]
       session.setDemoJudge({ id: j.id, name: j.name, email: j.email })
       router.push('/judge/dashboard')
@@ -38,11 +56,40 @@ export default function LoginContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email.trim()) return
+
+    if (!isSupabaseConfigured()) {
+      toast.error(
+        'Supabase is not configured in this environment. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY, or use Demo login.'
+      )
+      return
+    }
+
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 1200))
-    setLoading(false)
-    setSent(true)
-    toast.success('Magic link sent! Check your inbox.')
+    try {
+      const supabase = createClient()
+      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(postLoginPath)}`
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim().toLowerCase(),
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: redirectTo,
+        },
+      })
+
+      if (error) {
+        toast.error(error.message)
+        setLoading(false)
+        return
+      }
+
+      setSent(true)
+      toast.success('Check your email for the magic link.')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to send magic link.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -87,6 +134,24 @@ export default function LoginContent() {
             </div>
 
             <div className="p-6">
+              {errorMessage && (
+                <div className="mb-4 flex gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
+                  <AlertCircle size={16} className="shrink-0 text-red-600" />
+                  <p>{errorMessage}</p>
+                </div>
+              )}
+
+              {!isSupabaseConfigured() && (
+                <div className="mb-4 flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                  <AlertCircle size={16} className="shrink-0 text-amber-600" />
+                  <p>
+                    Supabase environment variables are missing. Magic links are disabled until you add{' '}
+                    <code className="rounded bg-white/60 px-1">NEXT_PUBLIC_SUPABASE_URL</code> and{' '}
+                    <code className="rounded bg-white/60 px-1">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> (e.g. in Vercel).
+                  </p>
+                </div>
+              )}
+
               {sent ? (
                 <div className="text-center py-4">
                   <div className="w-14 h-14 rounded-full bg-[#E1F5EE] flex items-center justify-center mx-auto mb-4">
@@ -119,14 +184,13 @@ export default function LoginContent() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="pl-9 border-gray-200 focus-visible:ring-[#1D9E8B]"
-                        required
-                      />
+                        required />
                     </div>
                   </div>
 
                   <Button
                     type="submit"
-                    disabled={loading || !email.trim()}
+                    disabled={loading || !email.trim() || !isSupabaseConfigured()}
                     className="w-full bg-[#1D9E8B] hover:bg-[#0F6E56] text-white gap-2"
                   >
                     {loading ? (
@@ -166,6 +230,10 @@ export default function LoginContent() {
                         <Users size={14} className="text-[#1D9E8B]" />
                         <p className="text-xs font-semibold text-[#1A2B3C]">Demo judge accounts</p>
                       </div>
+                      <p className="text-[10px] text-gray-500 mb-2">
+                        For real login, the organiser must invite the same email in Supabase first. Demo picks skip
+                        Supabase when auth demo mode is on; otherwise use magic link.
+                      </p>
                       <div className="grid grid-cols-1 gap-2">
                         {DEMO_JUDGES.map((j) => (
                           <button

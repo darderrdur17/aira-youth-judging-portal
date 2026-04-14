@@ -1,19 +1,53 @@
-import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
+import { type NextRequest, NextResponse } from 'next/server'
+import { sanitizeNextPath } from '@/lib/auth/sanitize-next'
 
-export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
-  const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/judge/dashboard'
+export async function GET(request: NextRequest) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  if (code) {
-    const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
-    }
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return NextResponse.redirect(new URL('/auth/login?error=missing_env', request.url))
   }
 
-  return NextResponse.redirect(`${origin}/auth/login?error=auth_failed`)
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
+  const nextRaw = requestUrl.searchParams.get('next')
+  const nextPath = sanitizeNextPath(nextRaw, '/judge/dashboard')
+
+  const redirectTarget = new URL(nextPath, requestUrl.origin)
+
+  let response = NextResponse.redirect(redirectTarget)
+
+  if (!code) {
+    return NextResponse.redirect(new URL('/auth/login?error=no_code', request.url))
+  }
+
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll()
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options)
+        })
+      },
+    },
+  })
+
+  const { error } = await supabase.auth.exchangeCodeForSession(code)
+
+  if (error) {
+    return NextResponse.redirect(new URL('/auth/login?error=auth_failed', request.url))
+  }
+
+  // Link invited judges (rows with matching email, user_id null) to this auth user
+  const { error: linkError } = await supabase.rpc('link_judge_to_user')
+  if (linkError) {
+    // RPC may not exist until SQL migration is applied — login still succeeds
+    console.warn('link_judge_to_user:', linkError.message)
+  }
+
+  return response
 }

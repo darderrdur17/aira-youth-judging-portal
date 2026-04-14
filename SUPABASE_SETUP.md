@@ -114,9 +114,25 @@ RESEND_API_KEY=re_your_api_key_here
 
 # App URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Organiser access (comma-separated). Use until you set competitions.created_by to your auth user id.
+ORGANISER_EMAILS=you@yourdomain.com,backup@yourdomain.com
+
+# Optional: allow the UI “demo” buttons without logging in (staging only — never enable in production)
+# NEXT_PUBLIC_ENABLE_UNAUTHENTICATED_DEMO=true
 ```
 
 3. Save the file. **Never commit this file to Git** (it's already in `.gitignore`)
+
+### Magic links create users in Supabase
+
+1. In Supabase go to **Authentication → Providers → Email**
+2. Ensure **“Confirm email”** / signup behaviour matches your workflow. For hackathon judges, teams often allow the magic link to create the user on first sign-in.
+3. After a user clicks the magic link, they appear under **Authentication → Users** (this is the “account saved in Supabase”).
+
+### Judge ↔ auth account linking
+
+The SQL function `link_judge_to_user()` (in `supabase-schema.sql`) runs after login and sets `judges.user_id` for any row where `judges.email` matches the signed-in user. **Invite the judge first** (row in `judges` with their email) so RLS and dashboards work.
 
 ---
 
