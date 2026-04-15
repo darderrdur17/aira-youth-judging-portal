@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -20,6 +20,7 @@ import { DEMO_CRITERIA, DEMO_SCORES } from '@/lib/demo-data'
 import type { Assignment, Judge, Project } from '@/lib/types'
 import { JUDGING_CRITERIA, computeWeightedScore } from '@/lib/types'
 import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
+import { toast } from 'sonner'
 
 function getJudgeProgress(assignments: Assignment[], judges: Judge[]) {
   return judges.map((judge) => {
@@ -72,6 +73,7 @@ export default function OrganiserDashboardPage() {
   const assignments = useOrganiserDemoStore((s) => s.assignments)
   const competitionName = useOrganiserDemoStore((s) => s.competitionName)
   const competitionDeadline = useOrganiserDemoStore((s) => s.competitionDeadline)
+  const [reminding, setReminding] = useState(false)
 
   const judgeProgress = useMemo(() => getJudgeProgress(assignments, judges), [assignments, judges])
   const topProjects = useMemo(() => getTopProjects(assignments, projects), [assignments, projects])
@@ -82,6 +84,43 @@ export default function OrganiserDashboardPage() {
   ).length
   const overallPct = totalAssignments > 0 ? (submittedAssignments / totalAssignments) * 100 : 0
   const judgesNeedingReminder = judgeProgress.filter((j) => j.pct < 100)
+
+  const sendReminders = async () => {
+    if (judgesNeedingReminder.length === 0) return
+    setReminding(true)
+    try {
+      const loginUrl = `${window.location.origin}/auth/login?role=judge`
+      let sent = 0
+      for (const jp of judgesNeedingReminder) {
+        const pendingCount = Math.max(0, jp.total - jp.done)
+        const res = await fetch('/api/email/reminder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: jp.judge.email,
+            judgeName: jp.judge.name,
+            competitionName,
+            deadline: competitionDeadline,
+            pendingCount,
+            loginUrl,
+          }),
+        })
+        const data = (await res.json()) as { ok?: boolean; error?: string }
+        if (!res.ok || !data.ok) {
+          throw new Error(
+            data.error ||
+              'Could not send reminders. Ensure RESEND_API_KEY and RESEND_FROM are set on the server.'
+          )
+        }
+        sent += 1
+      }
+      toast.success(`Reminder sent to ${sent} judge(s).`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to send reminders.')
+    } finally {
+      setReminding(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -94,9 +133,16 @@ export default function OrganiserDashboardPage() {
         <div className="flex items-center gap-2">
           <DeadlineCountdown deadline={competitionDeadline} />
           {judgesNeedingReminder.length > 0 && (
-            <Button size="sm" className="bg-[#E8735A] hover:bg-[#d4614a] text-white gap-1.5 text-xs">
+            <Button
+              size="sm"
+              onClick={() => void sendReminders()}
+              disabled={reminding}
+              className="bg-[#E8735A] hover:bg-[#d4614a] text-white gap-1.5 text-xs"
+            >
               <Mail size={12} />
-              Remind {judgesNeedingReminder.length} Judge{judgesNeedingReminder.length > 1 ? 's' : ''}
+              {reminding
+                ? 'Sending…'
+                : `Remind ${judgesNeedingReminder.length} Judge${judgesNeedingReminder.length > 1 ? 's' : ''}`}
             </Button>
           )}
         </div>
@@ -247,8 +293,13 @@ export default function OrganiserDashboardPage() {
             </Button>
           </Link>
           {judgesNeedingReminder.length > 0 && (
-            <Button size="sm" className="gap-1.5 text-xs bg-[#E8735A] hover:bg-[#d4614a] text-white">
-              <AlertTriangle size={12} /> Send Reminders ({judgesNeedingReminder.length})
+            <Button
+              size="sm"
+              onClick={() => void sendReminders()}
+              disabled={reminding}
+              className="gap-1.5 text-xs bg-[#E8735A] hover:bg-[#d4614a] text-white"
+            >
+              <AlertTriangle size={12} /> {reminding ? 'Sending…' : `Send Reminders (${judgesNeedingReminder.length})`}
             </Button>
           )}
           <Link href="/vote" target="_blank">

@@ -94,10 +94,39 @@ export default function OrganiserJudgesPage() {
   }
 
   const handleSendReminder = async (judgeId: string, judgeName: string) => {
+    const judge = judges.find((j) => j.id === judgeId)
+    if (!judge) return
+    const stats = getJudgeStats(judgeId)
+
     setSending(judgeId)
-    await new Promise((r) => setTimeout(r, 1000))
-    setSending(null)
-    toast.success(`Reminder sent to ${judgeName}.`)
+    try {
+      const res = await fetch('/api/email/reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: judge.email,
+          judgeName: judge.name,
+          competitionName: useOrganiserDemoStore.getState().competitionName,
+          deadline: useOrganiserDemoStore.getState().competitionDeadline,
+          pendingCount: Math.max(0, stats.total - stats.done),
+          loginUrl: `${window.location.origin}/auth/login?role=judge`,
+        }),
+      })
+
+      const data = (await res.json()) as { ok?: boolean; error?: string }
+      if (!res.ok || !data.ok) {
+        throw new Error(
+          data.error ||
+            'Could not send reminder. Ensure RESEND_API_KEY and RESEND_FROM are set on the server.'
+        )
+      }
+
+      toast.success(`Reminder sent to ${judgeName}.`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to send reminder.')
+    } finally {
+      setSending(null)
+    }
   }
 
   const handleDeactivate = (judgeId: string, judgeName: string) => {
@@ -125,9 +154,42 @@ export default function OrganiserJudgesPage() {
               size="sm"
               onClick={async () => {
                 setSending('all')
-                await new Promise((r) => setTimeout(r, 1200))
-                setSending(null)
-                toast.success(`Reminder sent to ${needingReminder.length} judge(s).`)
+                try {
+                  const compName = useOrganiserDemoStore.getState().competitionName
+                  const deadline = useOrganiserDemoStore.getState().competitionDeadline
+                  const loginUrl = `${window.location.origin}/auth/login?role=judge`
+
+                  let sentCount = 0
+                  for (const j of needingReminder) {
+                    const stats = getJudgeStats(j.id)
+                    const res = await fetch('/api/email/reminder', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        to: j.email,
+                        judgeName: j.name,
+                        competitionName: compName,
+                        deadline,
+                        pendingCount: Math.max(0, stats.total - stats.done),
+                        loginUrl,
+                      }),
+                    })
+                    const data = (await res.json()) as { ok?: boolean; error?: string }
+                    if (!res.ok || !data.ok) {
+                      throw new Error(
+                        data.error ||
+                          'Could not send reminders. Ensure RESEND_API_KEY and RESEND_FROM are set on the server.'
+                      )
+                    }
+                    sentCount += 1
+                  }
+
+                  toast.success(`Reminder sent to ${sentCount} judge(s).`)
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : 'Failed to send reminders.')
+                } finally {
+                  setSending(null)
+                }
               }}
               disabled={sending === 'all'}
               className="gap-1.5 text-xs bg-[#E8735A] hover:bg-[#d4614a] text-white"

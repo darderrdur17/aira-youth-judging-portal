@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
   const redirectTarget = new URL(nextPath, requestUrl.origin)
 
-  let response = NextResponse.redirect(redirectTarget)
+  const response = NextResponse.redirect(redirectTarget)
 
   if (!code) {
     return NextResponse.redirect(new URL('/auth/login?error=no_code', request.url))

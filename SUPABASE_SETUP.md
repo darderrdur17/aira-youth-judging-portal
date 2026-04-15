@@ -120,6 +120,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 # Resend (for sending magic links + judge reminder emails)
 RESEND_API_KEY=re_your_api_key_here
+RESEND_FROM="AISG Judging Portal <no-reply@yourdomain.com>"
 
 # App URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
