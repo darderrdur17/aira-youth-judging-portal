@@ -151,10 +151,10 @@ export default function LoginContent() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
             <div className={`px-6 py-5 border-b border-gray-100 ${isOrganiser ? 'bg-[#1A2B3C]' : 'bg-[#E1F5EE]'}`}>
               <Badge
-                className={`mb-2 text-xs ${
+                className={`mb-2 text-xs font-medium ${
                   isOrganiser
-                    ? 'bg-white/10 text-white border-white/20'
-                    : 'bg-[#1D9E8B]/20 text-[#0F6E56] border-[#1D9E8B]/30'
+                    ? 'bg-[#2A3F52] text-white border border-[#3D5669]'
+                    : 'bg-white text-[#0F6E56] border border-[#1D9E8B]'
                 }`}
               >
                 {isOrganiser ? 'Organiser Portal' : 'Judge Portal'}
@@ -182,8 +182,8 @@ export default function LoginContent() {
                   <AlertCircle size={16} className="shrink-0 text-amber-600" />
                   <p>
                     Supabase environment variables are missing. Magic links are disabled until you add{' '}
-                    <code className="rounded bg-white/60 px-1">NEXT_PUBLIC_SUPABASE_URL</code> and{' '}
-                    <code className="rounded bg-white/60 px-1">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> (e.g. in Vercel).
+                    <code className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-950 font-mono text-[11px]">NEXT_PUBLIC_SUPABASE_URL</code> and{' '}
+                    <code className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-950 font-mono text-[11px]">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> (e.g. in Vercel).
                   </p>
                 </div>
               )}

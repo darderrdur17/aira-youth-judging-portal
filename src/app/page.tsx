@@ -7,7 +7,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Nav */}
-      <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+      <nav className="border-b border-gray-200 bg-white sticky top-0 z-50 shadow-[0_1px_0_rgba(26,43,60,0.06)]">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#1D9E8B] flex items-center justify-center">
@@ -33,7 +33,7 @@ export default function HomePage() {
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#1A2B3C] via-[#1D3A4A] to-[#1A2B3C] py-20 px-4">
         {/* Decorative tiles */}
-        <div className="absolute inset-0 opacity-5">
+               <div className="absolute inset-0 opacity-[0.07]">
           {Array.from({ length: 120 }).map((_, i) => (
             <div
               key={i}
@@ -42,14 +42,14 @@ export default function HomePage() {
                 left: `${(i % 12) * 8.5}%`,
                 top: `${Math.floor(i / 12) * 18}%`,
                 backgroundColor: ['#1D9E8B', '#E8735A', '#F5A623', '#3A7BD5', '#7C5CBF'][i % 5],
-                opacity: Math.random() * 0.8 + 0.2,
+                opacity: 0.35 + (i % 8) * 0.08,
               }}
             />
           ))}
         </div>
 
         <div className="relative max-w-4xl mx-auto text-center">
-          <Badge className="bg-[#1D9E8B]/20 text-[#6DDFD0] border-[#1D9E8B]/30 mb-4 text-xs">
+          <Badge className="bg-[#145A52] text-[#D2F7EF] border border-[#2A9D8C] mb-4 text-xs font-medium shadow-sm">
             AI Ready ASEAN Youth Challenge 2026
           </Badge>
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 leading-tight">
@@ -69,13 +69,13 @@ export default function HomePage() {
               </Button>
             </Link>
             <Link href="/auth/login?role=organiser">
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 gap-2">
+              <Button size="lg" variant="outline" className="border-white text-white bg-[#243548] hover:bg-[#2E4560] gap-2 shadow-md">
                 <BarChart3 size={18} />
                 Organiser Portal
               </Button>
             </Link>
             <Link href="/vote">
-              <Button size="lg" variant="outline" className="border-pink-400/50 text-pink-200 hover:bg-pink-500/10 gap-2">
+              <Button size="lg" variant="outline" className="border-[#F9A8D4] text-[#FCE7F3] bg-[#4A2840] hover:bg-[#5C3350] gap-2 shadow-md">
                 <span>❤️</span>
                 People&#39;s Choice Vote
               </Button>

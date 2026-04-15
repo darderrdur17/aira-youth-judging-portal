@@ -205,7 +205,7 @@ export default function JudgeDashboardPage() {
               key={row.id}
               className={`bg-white rounded-xl border shadow-sm hover:shadow-md transition-all overflow-hidden ${
                 row.status === 'judged'
-                  ? 'border-[#1D9E8B]/30'
+                  ? 'border-[#9DCFC6]'
                   : row.state.conflictFlagged
                   ? 'border-amber-200'
                   : 'border-gray-100'
@@ -230,7 +230,7 @@ export default function JudgeDashboardPage() {
                         </Badge>
                       )}
                       {row.status === 'judged' ? (
-                        <Badge className="text-[10px] bg-[#E1F5EE] text-[#0F6E56] border-[#1D9E8B]/20">
+                        <Badge className="text-[10px] bg-[#E1F5EE] text-[#0F6E56] border border-[#B8DDD4]">
                           <CheckCircle2 size={9} className="mr-1" />Judged
                         </Badge>
                       ) : row.status === 'in_progress' ? (

@@ -223,7 +223,7 @@ export default function ScoringPage() {
                       <Lock size={9} /> Read-only
                     </Badge>
                   ) : state.isSubmitted ? (
-                    <Badge className="bg-[#E1F5EE] text-[#0F6E56] border-[#1D9E8B]/20 text-[10px] gap-1">
+                    <Badge className="bg-[#E1F5EE] text-[#0F6E56] border border-[#B8DDD4] text-[10px] gap-1">
                       <CheckCircle2 size={9} /> Submitted
                     </Badge>
                   ) : null}
@@ -295,9 +295,9 @@ export default function ScoringPage() {
               <Keyboard size={13} className="text-[#1D9E8B] flex-shrink-0" />
               <p className="text-[11px] text-gray-400 flex-1">
                 <span className="text-gray-300">Keyboard shortcuts:</span>{' '}
-                Press <kbd className="bg-white/10 px-1 rounded text-white text-[10px]">1</kbd>–<kbd className="bg-white/10 px-1 rounded text-white text-[10px]">9</kbd> / <kbd className="bg-white/10 px-1 rounded text-white text-[10px]">0</kbd>=10 to score ·{' '}
-                <kbd className="bg-white/10 px-1 rounded text-white text-[10px]">Tab</kbd> next criterion ·{' '}
-                <kbd className="bg-white/10 px-1 rounded text-white text-[10px]">Shift+Tab</kbd> prev
+                Press <kbd className="bg-[#2A3F52] border border-[#3D5669] px-1.5 py-0.5 rounded text-white text-[10px] font-mono shadow-sm">1</kbd>–<kbd className="bg-[#2A3F52] border border-[#3D5669] px-1.5 py-0.5 rounded text-white text-[10px] font-mono shadow-sm">9</kbd> / <kbd className="bg-[#2A3F52] border border-[#3D5669] px-1.5 py-0.5 rounded text-white text-[10px] font-mono shadow-sm">0</kbd>=10 to score ·{' '}
+                <kbd className="bg-[#2A3F52] border border-[#3D5669] px-1.5 py-0.5 rounded text-white text-[10px] font-mono shadow-sm">Tab</kbd> next criterion ·{' '}
+                <kbd className="bg-[#2A3F52] border border-[#3D5669] px-1.5 py-0.5 rounded text-white text-[10px] font-mono shadow-sm">Shift+Tab</kbd> prev
               </p>
               <button onClick={() => setShowKeyboardHint(!showKeyboardHint)} className="text-gray-500 hover:text-gray-300 text-[10px]">
                 {showKeyboardHint ? 'Hide' : 'More'}
@@ -341,12 +341,12 @@ export default function ScoringPage() {
                   key={criterion.key}
                   ref={(el) => { criterionRefs.current[idx] = el }}
                   onClick={() => setActiveCriterionIdx(idx)}
-                  className={`bg-white rounded-xl border shadow-sm p-4 cursor-pointer transition-all duration-150 ${
+                  className={`bg-white rounded-xl border-2 shadow-sm p-4 cursor-pointer transition-all duration-150 ${
                     isActive
-                      ? 'border-[#1D9E8B] ring-1 ring-[#1D9E8B]/20'
+                      ? 'border-[#1D9E8B] shadow-[0_0_0_3px_rgba(29,158,139,0.18)]'
                       : currentScore !== undefined
-                      ? 'border-[#1D9E8B]/20'
-                      : 'border-gray-100 hover:border-gray-200'
+                      ? 'border-[#9DCFC6]'
+                      : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <div className="flex items-start gap-3 mb-3">
@@ -447,7 +447,7 @@ export default function ScoringPage() {
                   Shared with team after judging closes
                 </Badge>
               </div>
-              <div className="bg-[#E1F5EE]/50 rounded-lg p-3 mb-2">
+              <div className="bg-[#E1F5EE] border border-[#B8DDD4] rounded-lg p-3 mb-2">
                 <div className="flex items-start gap-2">
                   <Info size={13} className="text-[#1D9E8B] mt-0.5 flex-shrink-0" />
                   <p className="text-[11px] text-[#0F6E56] leading-relaxed">

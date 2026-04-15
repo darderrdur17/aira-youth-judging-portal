@@ -144,7 +144,7 @@ export default function OrganiserDashboardPage() {
           <div className="divide-y divide-gray-50">
             {judgeProgress.map(({ judge, total, done, pct, lastActive }) => (
               <div key={judge.id} className="px-5 py-3.5 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#1D9E8B]/10 flex items-center justify-center text-[#1D9E8B] text-xs font-bold flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-[#D4EDE8] border border-[#9DCFC6] flex items-center justify-center text-[#0F6E56] text-xs font-bold flex-shrink-0">
                   {judge.name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -164,7 +164,7 @@ export default function OrganiserDashboardPage() {
                     <span className="text-[10px] text-gray-400">Last active: {lastActive}</span>
                     <Badge className={`text-[10px] ${
                       pct === 100
-                        ? 'bg-[#E1F5EE] text-[#0F6E56] border-[#1D9E8B]/20'
+                        ? 'bg-[#E1F5EE] text-[#0F6E56] border border-[#B8DDD4]'
                         : pct >= 40
                         ? 'bg-amber-50 text-amber-700 border-amber-200'
                         : 'bg-red-50 text-red-600 border-red-200'

@@ -47,7 +47,7 @@ export function TopNav({
   const links = isOrganiser ? organiserLinks : judgeLinks
 
   return (
-    <header className="bg-[#1A2B3C] border-b border-white/10 sticky top-0 z-50">
+    <header className="bg-[#1A2B3C] border-b border-[#2A3F52] sticky top-0 z-50 shadow-[0_1px_0_rgba(0,0,0,0.2)]">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center h-14 gap-4">
           {/* Logo */}
@@ -68,8 +68,8 @@ export function TopNav({
                   href={link.href}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
                     active
-                      ? 'bg-white/15 text-white'
-                      : 'text-gray-300 hover:text-white hover:bg-white/10'
+                      ? 'bg-[#2A3F52] text-white shadow-inner'
+                      : 'text-gray-200 hover:text-white hover:bg-[#243548]'
                   }`}
                 >
                   {link.label}
@@ -80,11 +80,11 @@ export function TopNav({
 
           {/* Right side */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Badge className="hidden sm:flex bg-[#1D9E8B]/20 text-[#6DDFD0] border-[#1D9E8B]/30 text-[10px]">
+            <Badge className="hidden sm:flex bg-[#1D9E8B] text-white border-0 text-[10px] font-semibold tracking-wide">
               {isOrganiser ? 'ORGANISER' : 'JUDGE'}
             </Badge>
 
-            <button className="w-8 h-8 rounded-md text-gray-300 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors">
+            <button type="button" className="w-8 h-8 rounded-md text-gray-200 hover:text-white hover:bg-[#243548] flex items-center justify-center transition-colors">
               <Bell size={15} />
             </button>
 

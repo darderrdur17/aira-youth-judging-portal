@@ -277,7 +277,7 @@ export default function CalibrationPage() {
                       <Badge className={`text-[10px] ${
                         r.spread > 15 ? 'bg-red-50 text-red-600 border-red-200' :
                         r.spread > 8 ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                        'bg-[#E1F5EE] text-[#0F6E56] border-[#1D9E8B]/20'
+                        'bg-[#E1F5EE] text-[#0F6E56] border border-[#B8DDD4]'
                       }`}>
                         Δ{r.spread.toFixed(1)}
                       </Badge>

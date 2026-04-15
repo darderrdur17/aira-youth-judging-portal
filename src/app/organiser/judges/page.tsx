@@ -178,7 +178,7 @@ export default function OrganiserJudgesPage() {
                 <TableRow key={judge.id} className={`hover:bg-gray-50 text-sm ${!judge.is_active ? 'opacity-50' : ''}`}>
                   <TableCell>
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-[#1D9E8B]/10 flex items-center justify-center text-[#1D9E8B] text-xs font-bold">
+                      <div className="w-8 h-8 rounded-full bg-[#D4EDE8] border border-[#9DCFC6] flex items-center justify-center text-[#0F6E56] text-xs font-bold">
                         {judge.name.charAt(0)}
                       </div>
                       <span className="font-medium text-[#1A2B3C]">{judge.name}</span>
@@ -201,7 +201,7 @@ export default function OrganiserJudgesPage() {
                       !judge.is_active
                         ? 'bg-gray-100 text-gray-500 border-gray-200'
                         : stats.pct === 100
-                        ? 'bg-[#E1F5EE] text-[#0F6E56] border-[#1D9E8B]/20'
+                        ? 'bg-[#E1F5EE] text-[#0F6E56] border border-[#B8DDD4]'
                         : stats.pct >= 40
                         ? 'bg-amber-50 text-amber-700 border-amber-200'
                         : 'bg-red-50 text-red-600 border-red-200'

@@ -166,7 +166,7 @@ export default function CompetitionSetupPage() {
         <div className="flex items-center gap-2 mb-4">
           <Settings size={15} className="text-[#1D9E8B]" />
           <h2 className="text-sm font-semibold text-[#1A2B3C]">Competition Type</h2>
-          <Badge className="text-[10px] bg-[#E1F5EE] text-[#0F6E56] border-[#1D9E8B]/20 ml-1">
+          <Badge className="text-[10px] bg-[#E1F5EE] text-[#0F6E56] border border-[#B8DDD4] ml-1">
             Based on AI Singapore Platform
           </Badge>
         </div>

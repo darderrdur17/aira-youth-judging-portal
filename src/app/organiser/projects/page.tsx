@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -16,6 +16,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -36,11 +37,23 @@ import {
   Trash2,
   Edit,
   Download,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { DEMO_ASSIGNMENTS, DEMO_PROJECTS, DEMO_SCORES } from '@/lib/demo-data'
 import type { Country } from '@/lib/types'
-import { JUDGING_CRITERIA } from '@/lib/types'
+import { cn } from '@/lib/utils'
+
+const MAX_PDF_BYTES = 20 * 1024 * 1024 // 20 MB — typical cap for browser demo; use cloud storage in production
+
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(new Error('read failed'))
+    reader.readAsDataURL(file)
+  })
+}
 
 const ASEAN_COUNTRIES: Country[] = [
   'Brunei', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia',
@@ -52,7 +65,33 @@ export default function OrganiserProjectsPage() {
   const [search, setSearch] = useState('')
   const [addOpen, setAddOpen] = useState(false)
   const [newProject, setNewProject] = useState({ name: '', country: '' as Country | '', video_url: '' })
+  const [pdfFile, setPdfFile] = useState<File | null>(null)
+  const [pdfDragging, setPdfDragging] = useState(false)
+  const [addSubmitting, setAddSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const pdfInputRef = useRef<HTMLInputElement>(null)
+
+  const resetAddForm = useCallback(() => {
+    setNewProject({ name: '', country: '', video_url: '' })
+    setPdfFile(null)
+    setPdfDragging(false)
+    setAddSubmitting(false)
+  }, [])
+
+  const validateAndSetPdf = useCallback((file: File) => {
+    const looksPdf =
+      file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+    if (!looksPdf) {
+      toast.error('Please choose a PDF file (ends in .pdf).')
+      return
+    }
+    if (file.size > MAX_PDF_BYTES) {
+      toast.error(`PDF is too large. Maximum size is ${MAX_PDF_BYTES / (1024 * 1024)} MB. Try compressing the file or use CSV import with a hosted link.`)
+      return
+    }
+    setPdfFile(file)
+    toast.success(`“${file.name}” is ready to attach.`)
+  }, [])
 
   const filtered = projects.filter((p) => {
     const q = search.toLowerCase()
@@ -69,25 +108,38 @@ export default function OrganiserProjectsPage() {
         DEMO_SCORES.some((s) => s.assignment_id === a.id && s.submitted_at)
     ).length
 
-  const handleAddProject = () => {
-    if (!newProject.name || !newProject.country) {
-      toast.error('Project name and country are required.')
+  const handleAddProject = async () => {
+    if (!newProject.name.trim() || !newProject.country) {
+      toast.error('Please enter a project name and choose a country.')
       return
+    }
+    const hadPdf = !!pdfFile
+    setAddSubmitting(true)
+    let pdf_url: string | null = null
+    if (pdfFile) {
+      try {
+        pdf_url = await readFileAsDataURL(pdfFile)
+      } catch {
+        setAddSubmitting(false)
+        toast.error('Could not read the PDF. Try another file or add the project without a PDF first.')
+        return
+      }
     }
     const project = {
       id: `proj-${Date.now()}`,
       competition_id: 'comp-2026',
-      name: newProject.name,
+      name: newProject.name.trim(),
       country: newProject.country as Country,
-      pdf_url: null,
-      video_url: newProject.video_url || null,
+      pdf_url,
+      video_url: newProject.video_url.trim() || null,
       metadata: null,
       created_at: new Date().toISOString(),
     }
     setProjects([...projects, project])
-    setNewProject({ name: '', country: '', video_url: '' })
+    resetAddForm()
     setAddOpen(false)
-    toast.success(`"${project.name}" added successfully.`)
+    setAddSubmitting(false)
+    toast.success(`“${project.name}” was added${hadPdf ? ' with your PDF' : ''}.`)
   }
 
   const handleCSVImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,6 +154,7 @@ export default function OrganiserProjectsPage() {
 
       const nameIdx = header.indexOf('project_name')
       const countryIdx = header.indexOf('country')
+      const pdfIdx = header.indexOf('pdf_url')
       const videoIdx = header.indexOf('video_url')
 
       if (nameIdx === -1 || countryIdx === -1) {
@@ -111,12 +164,13 @@ export default function OrganiserProjectsPage() {
 
       const imported = lines.slice(1).map((line) => {
         const cols = line.split(',').map((c) => c.trim())
+        const pdfCell = pdfIdx !== -1 ? cols[pdfIdx] : ''
         return {
           id: `proj-csv-${Date.now()}-${Math.random()}`,
           competition_id: 'comp-2026',
           name: cols[nameIdx],
           country: cols[countryIdx] as Country,
-          pdf_url: null,
+          pdf_url: pdfCell ? pdfCell : null,
           video_url: videoIdx !== -1 ? (cols[videoIdx] || null) : null,
           metadata: null,
           created_at: new Date().toISOString(),
@@ -136,7 +190,9 @@ export default function OrganiserProjectsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-[#1A2B3C]">Projects</h1>
-          <p className="text-sm text-gray-500">{projects.length} projects loaded</p>
+          <p className="text-sm text-gray-500">
+            {projects.length} team{projects.length !== 1 ? 's' : ''} in this competition. Add one with the form (upload a PDF from your computer) or import a spreadsheet.
+          </p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -169,32 +225,54 @@ export default function OrganiserProjectsPage() {
             <Download size={13} /> Export CSV
           </Button>
 
-          <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <Button size="sm" onClick={() => setAddOpen(true)} className="gap-1.5 text-xs bg-[#1D9E8B] hover:bg-[#0F6E56] text-white">
+          <Dialog
+            open={addOpen}
+            onOpenChange={(open) => {
+              setAddOpen(open)
+              if (!open) resetAddForm()
+            }}
+          >
+            <Button
+              size="sm"
+              onClick={() => {
+                resetAddForm()
+                setAddOpen(true)
+              }}
+              className="gap-1.5 text-xs bg-[#1D9E8B] hover:bg-[#0F6E56] text-white"
+            >
               <Plus size={13} /> Add Project
             </Button>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-lg gap-0 sm:max-w-lg">
               <DialogHeader>
-                <DialogTitle className="text-[#1A2B3C]">Add New Project</DialogTitle>
+                <DialogTitle className="text-[#1A2B3C] text-lg">Add a new team project</DialogTitle>
+                <DialogDescription className="text-gray-600 text-sm leading-relaxed">
+                  Fill in the team name and country (required). Upload their written proposal as a PDF, or skip if you will add a link later via CSV. Judges use these materials when scoring.
+                </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4 pt-2">
+              <div className="space-y-4 pt-4 max-h-[min(70vh,32rem)] overflow-y-auto pr-1">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Project Name *</Label>
+                  <Label htmlFor="project-name" className="text-sm font-medium text-[#1A2B3C]">
+                    Team / project name <span className="text-red-600">*</span>
+                  </Label>
                   <Input
+                    id="project-name"
                     placeholder="e.g. AgriSense AI"
                     value={newProject.name}
                     onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                    className="text-sm"
+                    className="text-sm h-10"
+                    autoComplete="off"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Country *</Label>
+                  <Label htmlFor="project-country" className="text-sm font-medium text-[#1A2B3C]">
+                    Country <span className="text-red-600">*</span>
+                  </Label>
                   <Select
-                    value={newProject.country}
+                    value={newProject.country || undefined}
                     onValueChange={(v) => setNewProject({ ...newProject, country: (v ?? '') as Country })}
                   >
-                    <SelectTrigger className="text-sm">
-                      <SelectValue placeholder="Select country" />
+                    <SelectTrigger id="project-country" className="text-sm h-10 w-full">
+                      <SelectValue placeholder="Tap to choose country" />
                     </SelectTrigger>
                     <SelectContent>
                       {ASEAN_COUNTRIES.map((c) => (
@@ -202,20 +280,128 @@ export default function OrganiserProjectsPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-gray-500">Must match one of the ASEAN countries in the list.</p>
                 </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-[#1A2B3C]">Written proposal (PDF)</Label>
+                  <p className="text-xs text-gray-500 -mt-1">
+                    Optional but recommended. PDF only, up to {MAX_PDF_BYTES / (1024 * 1024)} MB. Drag the file here or click to browse.
+                  </p>
+                  <input
+                    ref={pdfInputRef}
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    className="sr-only"
+                    aria-label="Choose PDF file"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0]
+                      if (f) validateAndSetPdf(f)
+                      e.target.value = ''
+                    }}
+                  />
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Drop PDF here or click to upload"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        pdfInputRef.current?.click()
+                      }
+                    }}
+                    onDragEnter={(e) => {
+                      e.preventDefault()
+                      setPdfDragging(true)
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      setPdfDragging(true)
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault()
+                      if (!e.currentTarget.contains(e.relatedTarget as Node)) setPdfDragging(false)
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      setPdfDragging(false)
+                      const f = e.dataTransfer.files?.[0]
+                      if (f) validateAndSetPdf(f)
+                    }}
+                    onClick={() => pdfInputRef.current?.click()}
+                    className={cn(
+                      'rounded-lg border-2 border-dashed px-4 py-8 text-center cursor-pointer transition-colors min-h-[7rem] flex flex-col items-center justify-center gap-2',
+                      pdfDragging
+                        ? 'border-[#1D9E8B] bg-[#E1F5EE] shadow-[inset_0_0_0_2px_rgba(29,158,139,0.15)]'
+                        : 'border-gray-300 bg-[#F4F6F8] hover:border-[#1D9E8B] hover:bg-[#E8F5F2]'
+                    )}
+                  >
+                    {pdfFile ? (
+                      <>
+                        <FileText className="text-[#1D9E8B]" size={28} aria-hidden />
+                        <p className="text-sm font-medium text-[#1A2B3C] break-all max-w-full px-2">{pdfFile.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {pdfFile.size >= 1024 * 1024
+                            ? `${(pdfFile.size / (1024 * 1024)).toFixed(2)} MB`
+                            : `${(pdfFile.size / 1024).toFixed(1)} KB`}
+                          {' '}— will attach when you add the project
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="mt-1 gap-1"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setPdfFile(null)
+                          }}
+                        >
+                          <X size={14} /> Remove file
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="text-gray-400" size={28} aria-hidden />
+                        <p className="text-sm text-[#1A2B3C] font-medium">Drop PDF here or click to choose file</p>
+                        <p className="text-xs text-gray-500">Your file stays in this browser until you click Add Project</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Video URL (optional)</Label>
+                  <Label htmlFor="video-url" className="text-sm font-medium text-[#1A2B3C]">
+                    Video link <span className="text-gray-400 font-normal">(optional)</span>
+                  </Label>
                   <Input
-                    placeholder="https://youtube.com/..."
+                    id="video-url"
+                    type="url"
+                    inputMode="url"
+                    placeholder="https://… (YouTube, Google Drive, etc.)"
                     value={newProject.video_url}
                     onChange={(e) => setNewProject({ ...newProject, video_url: e.target.value })}
-                    className="text-sm"
+                    className="text-sm h-10"
+                    autoComplete="off"
                   />
+                  <p className="text-xs text-gray-500">Paste a full web address if the team has a demo video online.</p>
                 </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button variant="outline" size="sm" onClick={() => setAddOpen(false)}>Cancel</Button>
-                  <Button size="sm" onClick={handleAddProject} className="bg-[#1D9E8B] hover:bg-[#0F6E56] text-white">
-                    Add Project
+                <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2 border-t border-gray-100">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-10"
+                    disabled={addSubmitting}
+                    onClick={() => setAddOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="h-10 bg-[#1D9E8B] hover:bg-[#0F6E56] text-white min-w-[8rem]"
+                    disabled={addSubmitting}
+                    onClick={() => void handleAddProject()}
+                  >
+                    {addSubmitting ? 'Saving…' : 'Add project'}
                   </Button>
                 </div>
               </div>
@@ -225,9 +411,14 @@ export default function OrganiserProjectsPage() {
       </div>
 
       {/* CSV template */}
-      <div className="bg-[#E1F5EE] rounded-lg p-3 text-xs text-[#0F6E56]">
-        <strong>CSV format:</strong> <code className="bg-white/60 px-1 py-0.5 rounded">project_name, country, pdf_url, video_url</code>
-        {' '}— Headers required. Country must match an ASEAN member state name.
+      <div className="bg-[#E1F5EE] rounded-lg p-4 text-sm text-[#0F6E56] space-y-1">
+        <p>
+          <strong>Using a spreadsheet instead?</strong> Download a sample row from Export CSV, or use columns:{' '}
+          <code className="bg-white px-1.5 py-0.5 rounded text-xs font-mono border border-[#B8DDD4] shadow-sm">project_name, country, pdf_url, video_url</code>.
+        </p>
+        <p className="text-xs text-[#0B5C4A]">
+          For <code className="bg-white px-1 rounded border border-[#B8DDD4]">pdf_url</code>, paste a link to where the PDF is hosted (e.g. Google Drive). The form above is best when you have the file on your computer.
+        </p>
       </div>
 
       {/* Search */}
@@ -286,7 +477,7 @@ export default function OrganiserProjectsPage() {
                   <TableCell>
                     <Badge className={`text-[10px] ${
                       subCount === assignCount && assignCount > 0
-                        ? 'bg-[#E1F5EE] text-[#0F6E56] border-[#1D9E8B]/20'
+                        ? 'bg-[#E1F5EE] text-[#0F6E56] border border-[#B8DDD4]'
                         : subCount > 0
                         ? 'bg-amber-50 text-amber-700 border-amber-200'
                         : 'bg-gray-50 text-gray-500 border-gray-200'

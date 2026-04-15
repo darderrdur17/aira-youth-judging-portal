@@ -134,7 +134,7 @@ export default function OrganiserAssignmentsPage() {
           ).length
           return (
             <div key={judge.id} className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#1D9E8B]/10 flex items-center justify-center text-[#1D9E8B] text-xs font-bold">
+              <div className="w-9 h-9 rounded-full bg-[#D4EDE8] border border-[#9DCFC6] flex items-center justify-center text-[#0F6E56] text-xs font-bold">
                 {judge.name.charAt(0)}
               </div>
               <div>
@@ -176,7 +176,7 @@ export default function OrganiserAssignmentsPage() {
                   <TableCell>
                     <Badge className={`text-[10px] ${
                       submitted
-                        ? 'bg-[#E1F5EE] text-[#0F6E56] border-[#1D9E8B]/20'
+                        ? 'bg-[#E1F5EE] text-[#0F6E56] border border-[#B8DDD4]'
                         : 'bg-gray-50 text-gray-500 border-gray-200'
                     }`}>
                       {submitted ? (

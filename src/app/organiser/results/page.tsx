@@ -256,7 +256,7 @@ export default function OrganiserResultsPage() {
 
                   {/* Expanded breakdown */}
                   {isExp && (
-                    <TableRow key={`${r.project.id}-expanded`} className="bg-[#E1F5EE]/30">
+                    <TableRow key={`${r.project.id}-expanded`} className="bg-[#E8F4F1] border-y border-[#C5E5DD]">
                       <TableCell colSpan={8} className="py-3 px-5">
                         <div className="space-y-4">
                           {/* Per-judge scores */}

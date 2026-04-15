@@ -152,7 +152,7 @@ export default function OrganiserAuditPage() {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Badge className="text-[10px] bg-[#E1F5EE] text-[#0F6E56] border-[#1D9E8B]/20">
+                    <Badge className="text-[10px] bg-[#E1F5EE] text-[#0F6E56] border border-[#B8DDD4]">
                       {entry.action}
                     </Badge>
                   </TableCell>

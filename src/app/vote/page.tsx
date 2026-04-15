@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { CountryBadge } from '@/components/shared/CountryBadge'
 import { Progress } from '@/components/ui/progress'
-import { Heart, Search, ArrowLeft, CheckCircle2, Video, FileText, Star, Trophy, Info } from 'lucide-react'
+import { Heart, Search, ArrowLeft, CheckCircle2, Video, FileText, Trophy, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { DEMO_PROJECTS } from '@/lib/demo-data'
 
@@ -84,7 +84,7 @@ export default function PeoplesChoicePage() {
                 <span className="text-white text-[10px] font-bold">AJ</span>
               </div>
               <div>
-                <p className="font-bold text-sm">People's Choice Award</p>
+                <p className="font-bold text-sm">People&apos;s Choice Award</p>
                 <p className="text-xs text-gray-400">AI Ready ASEAN Youth Challenge 2026</p>
               </div>
             </div>
@@ -97,14 +97,14 @@ export default function PeoplesChoicePage() {
         <div className="max-w-5xl mx-auto px-4 pb-8 pt-2">
           <div className="flex items-start gap-3">
             <div>
-              <Badge className="bg-[#1D9E8B]/20 text-[#6DDFD0] border-[#1D9E8B]/30 text-xs mb-3">
+              <Badge className="bg-[#145A52] text-[#D2F7EF] border border-[#2A9D8C] text-xs mb-3 font-medium shadow-sm">
                 <Heart size={11} className="mr-1.5" /> Public Voting — 20% of Final Score
               </Badge>
               <h1 className="text-2xl sm:text-3xl font-bold mb-2">Vote for Your Favourite Project</h1>
               <p className="text-gray-300 text-sm max-w-xl leading-relaxed">
                 Community votes make up <strong className="text-white">20%</strong> of the final competition score.
                 You can vote for up to <strong className="text-white">3 projects</strong> from any ASEAN country.
-                Help shape who wins the People's Choice Award!
+                Help shape who wins the People&apos;s Choice Award!
               </p>
               <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
                 <span className="flex items-center gap-1.5">
@@ -153,7 +153,7 @@ export default function PeoplesChoicePage() {
                   <div className={`${heights[i]} ${colors[podiumIdx]} rounded-t-lg flex flex-col items-center justify-end pb-2 pt-3`}>
                     <span className="text-xl mb-1">{medals[podiumIdx]}</span>
                     <span className="font-bold text-sm">{votes[project.id] ?? 0}</span>
-                    <span className="text-[10px] opacity-70">votes</span>
+                    <span className="text-[10px] text-gray-600">votes</span>
                   </div>
                 </div>
               )
@@ -163,10 +163,10 @@ export default function PeoplesChoicePage() {
 
         {/* My votes summary */}
         {myVotes.size > 0 && (
-          <div className="bg-[#E1F5EE] border border-[#1D9E8B]/30 rounded-xl p-4 flex items-center gap-3">
+          <div className="bg-[#E1F5EE] border border-[#1D9E8B] rounded-xl p-4 flex items-center gap-3 shadow-sm">
             <CheckCircle2 size={18} className="text-[#1D9E8B] flex-shrink-0" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-[#0F6E56]">You've voted for {myVotes.size}/3 project(s)</p>
+              <p className="text-sm font-semibold text-[#0F6E56]">You&apos;ve voted for {myVotes.size}/3 project(s)</p>
               <p className="text-xs text-[#0F6E56] mt-0.5">
                 {DEMO_PROJECTS.filter((p) => myVotes.has(p.id)).map((p) => p.name).join(', ')}
               </p>
@@ -207,7 +207,7 @@ export default function PeoplesChoicePage() {
 
         {/* Project cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {sorted.map((project, i) => {
+          {sorted.map((project) => {
             const projectVotes = votes[project.id] ?? 0
             const isVoted = myVotes.has(project.id)
             const pct = maxVotes > 0 ? (projectVotes / maxVotes) * 100 : 0
@@ -284,7 +284,7 @@ export default function PeoplesChoicePage() {
 
         {/* Footer */}
         <div className="text-center py-4 text-xs text-gray-400">
-          <p>People's Choice Award — USD $100 per country · Most popular video submission</p>
+          <p>People&apos;s Choice Award — USD $100 per country · Most popular video submission</p>
           <p className="mt-1">Organised by IMDA · AI Singapore · ASEAN Foundation · Google.org</p>
         </div>
       </div>
