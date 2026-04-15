@@ -17,6 +17,16 @@ function mapSignUpError(message: string): string {
   if (m.includes('already registered') || m.includes('already been registered')) {
     return 'This email already has an account. Use login with password or magic link instead.'
   }
+  if (
+    m.includes('error sending confirmation email') ||
+    (m.includes('confirmation') && m.includes('email') && (m.includes('smtp') || m.includes('send')))
+  ) {
+    return (
+      'Supabase could not send the confirmation email. In Supabase open Authentication → SMTP and configure an email provider ' +
+      '(e.g. Resend SMTP), ensure your sender domain/address is verified, and confirm the Site URL / redirect URLs. ' +
+      'Then check Authentication → Logs for the detailed error.'
+    )
+  }
   if (m.includes('password')) {
     return 'Password does not meet requirements. Use at least 8 characters.'
   }
