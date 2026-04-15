@@ -22,17 +22,28 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Plus, Trash2, CheckCircle2, Clock, Users } from 'lucide-react'
+import { Plus, Trash2, CheckCircle2, Clock, Users, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
-import { DEMO_ASSIGNMENTS, DEMO_JUDGES, DEMO_PROJECTS, DEMO_SCORES } from '@/lib/demo-data'
+import { DEMO_SCORES } from '@/lib/demo-data'
+import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 
 export default function OrganiserAssignmentsPage() {
-  const [assignments, setAssignments] = useState(DEMO_ASSIGNMENTS)
+  const judges = useOrganiserDemoStore((s) => s.judges)
+  const projects = useOrganiserDemoStore((s) => s.projects)
+  const assignments = useOrganiserDemoStore((s) => s.assignments)
+  const addAssignment = useOrganiserDemoStore((s) => s.addAssignment)
+  const updateAssignment = useOrganiserDemoStore((s) => s.updateAssignment)
+  const deleteAssignment = useOrganiserDemoStore((s) => s.deleteAssignment)
+
   const [addOpen, setAddOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editAssignId, setEditAssignId] = useState<string | null>(null)
   const [newAssign, setNewAssign] = useState({ judgeId: '', projectId: '' })
+  const [editAssign, setEditAssign] = useState({ judgeId: '', projectId: '' })
 
   const isSubmitted = (assignmentId: string) =>
     DEMO_SCORES.some((s) => s.assignment_id === assignmentId && s.submitted_at)
@@ -54,18 +65,49 @@ export default function OrganiserAssignmentsPage() {
       toast.error('This judge is already assigned to that project.')
       return
     }
+    const judgeId = newAssign.judgeId
+    const projectId = newAssign.projectId
     const assign = {
       id: `assign-${Date.now()}`,
-      judge_id: newAssign.judgeId,
-      project_id: newAssign.projectId,
+      judge_id: judgeId,
+      project_id: projectId,
       assigned_at: new Date().toISOString(),
     }
-    setAssignments([...assignments, assign])
+    addAssignment(assign)
     setNewAssign({ judgeId: '', projectId: '' })
     setAddOpen(false)
-    const judge = DEMO_JUDGES.find((j) => j.id === newAssign.judgeId)
-    const project = DEMO_PROJECTS.find((p) => p.id === newAssign.projectId)
+    const judge = judges.find((j) => j.id === judgeId)
+    const project = projects.find((p) => p.id === projectId)
     toast.success(`${judge?.name} assigned to "${project?.name}".`)
+  }
+
+  const openEditAssignment = (assignmentId: string) => {
+    const a = assignments.find((x) => x.id === assignmentId)
+    if (!a) return
+    setEditAssignId(assignmentId)
+    setEditAssign({ judgeId: a.judge_id, projectId: a.project_id })
+    setEditOpen(true)
+  }
+
+  const handleSaveEditAssignment = () => {
+    if (!editAssignId || !editAssign.judgeId || !editAssign.projectId) {
+      toast.error('Select both judge and project.')
+      return
+    }
+    const dup = assignments.some(
+      (a) =>
+        a.id !== editAssignId &&
+        a.judge_id === editAssign.judgeId &&
+        a.project_id === editAssign.projectId
+    )
+    if (dup) {
+      toast.error('This judge is already assigned to that project.')
+      return
+    }
+    updateAssignment(editAssignId, { judge_id: editAssign.judgeId, project_id: editAssign.projectId })
+    setEditOpen(false)
+    setEditAssignId(null)
+    toast.success('Assignment updated.')
   }
 
   return (
@@ -82,6 +124,9 @@ export default function OrganiserAssignmentsPage() {
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle className="text-[#1A2B3C]">New Assignment</DialogTitle>
+              <DialogDescription className="text-sm text-gray-600">
+                Pair an active judge with a project. You can change pending assignments later from the table.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 pt-2">
               <div className="space-y-1.5">
@@ -91,7 +136,7 @@ export default function OrganiserAssignmentsPage() {
                     <SelectValue placeholder="Select judge" />
                   </SelectTrigger>
                   <SelectContent>
-                    {DEMO_JUDGES.filter((j) => j.is_active).map((j) => (
+                    {judges.filter((j) => j.is_active).map((j) => (
                       <SelectItem key={j.id} value={j.id}>
                         {j.name} ({judgeLoadMap[j.id] ?? 0} assigned)
                       </SelectItem>
@@ -106,7 +151,7 @@ export default function OrganiserAssignmentsPage() {
                     <SelectValue placeholder="Select project" />
                   </SelectTrigger>
                   <SelectContent>
-                    {DEMO_PROJECTS.map((p) => (
+                    {projects.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         {p.name} ({p.country})
                       </SelectItem>
@@ -123,11 +168,56 @@ export default function OrganiserAssignmentsPage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditAssignId(null) }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-[#1A2B3C]">Edit assignment</DialogTitle>
+              <DialogDescription className="text-sm text-gray-600">
+                Reassign judge or project for this row. Submitted scores cannot be edited here—remove the assignment only if allowed by your process.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[#1A2B3C]">Judge</label>
+                <Select value={editAssign.judgeId} onValueChange={(v) => setEditAssign({ ...editAssign, judgeId: v ?? '' })}>
+                  <SelectTrigger className="text-sm w-full">
+                    <SelectValue placeholder="Select judge" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {judges.filter((j) => j.is_active).map((j) => (
+                      <SelectItem key={j.id} value={j.id}>{j.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[#1A2B3C]">Project</label>
+                <Select value={editAssign.projectId} onValueChange={(v) => setEditAssign({ ...editAssign, projectId: v ?? '' })}>
+                  <SelectTrigger className="text-sm w-full">
+                    <SelectValue placeholder="Select project" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <Button variant="outline" size="sm" onClick={() => setEditOpen(false)}>Cancel</Button>
+                <Button size="sm" onClick={handleSaveEditAssignment} className="bg-[#1D9E8B] hover:bg-[#0F6E56] text-white">
+                  Save changes
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Load summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {DEMO_JUDGES.map((judge) => {
+        {judges.map((judge) => {
           const load = judgeLoadMap[judge.id] ?? 0
           const submitted = assignments.filter(
             (a) => a.judge_id === judge.id && isSubmitted(a.id)
@@ -162,8 +252,8 @@ export default function OrganiserAssignmentsPage() {
           </TableHeader>
           <TableBody>
             {assignments.map((assignment) => {
-              const judge = DEMO_JUDGES.find((j) => j.id === assignment.judge_id)
-              const project = DEMO_PROJECTS.find((p) => p.id === assignment.project_id)
+              const judge = judges.find((j) => j.id === assignment.judge_id)
+              const project = projects.find((p) => p.id === assignment.project_id)
               const submitted = isSubmitted(assignment.id)
               return (
                 <TableRow key={assignment.id} className="hover:bg-gray-50 text-sm">
@@ -187,17 +277,31 @@ export default function OrganiserAssignmentsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {!submitted && (
-                      <button
-                        className="w-7 h-7 rounded hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500"
-                        onClick={() => {
-                          setAssignments(assignments.filter((a) => a.id !== assignment.id))
-                          toast.success('Assignment removed.')
-                        }}
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    )}
+                    <div className="flex gap-1">
+                      {!submitted && (
+                        <>
+                          <button
+                            type="button"
+                            title="Edit assignment"
+                            className="w-7 h-7 rounded hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-[#1D9E8B]"
+                            onClick={() => openEditAssignment(assignment.id)}
+                          >
+                            <Pencil size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            title="Remove assignment"
+                            className="w-7 h-7 rounded hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500"
+                            onClick={() => {
+                              deleteAssignment(assignment.id)
+                              toast.success('Assignment removed.')
+                            }}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               )

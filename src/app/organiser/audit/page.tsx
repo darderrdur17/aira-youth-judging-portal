@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,14 +14,16 @@ import {
 } from '@/components/ui/table'
 import { Search, Download, ShieldCheck } from 'lucide-react'
 import { toast } from 'sonner'
-import { DEMO_ASSIGNMENTS, DEMO_CRITERIA, DEMO_JUDGES, DEMO_PROJECTS, DEMO_SCORES } from '@/lib/demo-data'
+import { DEMO_CRITERIA, DEMO_SCORES } from '@/lib/demo-data'
+import type { Assignment, Judge, Project } from '@/lib/types'
+import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 
-// Build a synthetic audit log from scores
-function buildAuditLog() {
+// Build a synthetic audit log from scores (labels follow current organiser registry)
+function buildAuditLog(assignments: Assignment[], judges: Judge[], projects: Project[]) {
   return DEMO_SCORES.filter((s) => s.submitted_at).map((score) => {
-    const assignment = DEMO_ASSIGNMENTS.find((a) => a.id === score.assignment_id)
-    const judge = DEMO_JUDGES.find((j) => j.id === assignment?.judge_id)
-    const project = DEMO_PROJECTS.find((p) => p.id === assignment?.project_id)
+    const assignment = assignments.find((a) => a.id === score.assignment_id)
+    const judge = judges.find((j) => j.id === assignment?.judge_id)
+    const project = projects.find((p) => p.id === assignment?.project_id)
     const criterion = DEMO_CRITERIA.find((c) => c.id === score.criterion_id)
     return {
       id: score.id,
@@ -37,7 +39,13 @@ function buildAuditLog() {
 }
 
 export default function OrganiserAuditPage() {
-  const log = buildAuditLog()
+  const projects = useOrganiserDemoStore((s) => s.projects)
+  const judges = useOrganiserDemoStore((s) => s.judges)
+  const assignments = useOrganiserDemoStore((s) => s.assignments)
+  const log = useMemo(
+    () => buildAuditLog(assignments, judges, projects),
+    [assignments, judges, projects]
+  )
   const [search, setSearch] = useState('')
 
   const filtered = log.filter((entry) => {
@@ -93,8 +101,9 @@ export default function OrganiserAuditPage() {
       <div className="bg-[#E1F5EE] rounded-lg p-3 flex items-start gap-2">
         <ShieldCheck size={14} className="text-[#1D9E8B] mt-0.5 flex-shrink-0" />
         <p className="text-xs text-[#0F6E56] leading-relaxed">
-          This immutable audit trail records every score save event. It can be exported for dispute resolution.
-          All timestamps are in UTC.
+          Score events are recorded as an append-only trail. Judge and project names shown here reflect your
+          current registry (editing a name in Judges or Projects updates labels in this view; the underlying score event ids do not change).
+          Export includes the columns shown. Timestamps display in Singapore time.
         </p>
       </div>
 

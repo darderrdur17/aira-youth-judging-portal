@@ -15,17 +15,29 @@ export default function HomePage() {
             </div>
             <span className="font-semibold text-[#1A2B3C] text-sm">AISG Judging Portal</span>
           </div>
-          <div className="flex gap-2">
-            <Link href="/auth/login?role=judge">
-              <Button variant="outline" size="sm" className="border-[#1D9E8B] text-[#1D9E8B] hover:bg-[#E1F5EE]">
-                Judge Login
-              </Button>
-            </Link>
-            <Link href="/auth/login?role=organiser">
-              <Button size="sm" className="bg-[#1D9E8B] hover:bg-[#0F6E56] text-white">
-                Organiser Login
-              </Button>
-            </Link>
+          <div className="flex flex-col items-end gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+            <div className="flex gap-2">
+              <Link href="/auth/login?role=judge">
+                <Button variant="outline" size="sm" className="border-[#1D9E8B] text-[#1D9E8B] hover:bg-[#E1F5EE]">
+                  Judge Login
+                </Button>
+              </Link>
+              <Link href="/auth/login?role=organiser">
+                <Button size="sm" className="bg-[#1D9E8B] hover:bg-[#0F6E56] text-white">
+                  Organiser Login
+                </Button>
+              </Link>
+            </div>
+            <div className="hidden sm:block text-gray-300 text-xs">|</div>
+            <div className="flex gap-2 text-xs">
+              <Link href="/auth/sign-up?role=judge" className="text-[#1D9E8B] hover:underline font-medium">
+                Judge sign up
+              </Link>
+              <span className="text-gray-300">·</span>
+              <Link href="/auth/sign-up?role=organiser" className="text-[#1D9E8B] hover:underline font-medium">
+                Organiser sign up
+              </Link>
+            </div>
           </div>
         </div>
       </nav>

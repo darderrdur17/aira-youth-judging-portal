@@ -9,7 +9,7 @@ import { CountryBadge } from '@/components/shared/CountryBadge'
 import { Progress } from '@/components/ui/progress'
 import { Heart, Search, ArrowLeft, CheckCircle2, Video, FileText, Trophy, Info } from 'lucide-react'
 import { toast } from 'sonner'
-import { DEMO_PROJECTS } from '@/lib/demo-data'
+import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 
 const VOTE_CLOSE = '2026-04-15T04:00:00Z'
 
@@ -26,6 +26,7 @@ const INITIAL_VOTES: Record<string, number> = {
 }
 
 export default function PeoplesChoicePage() {
+  const demoProjects = useOrganiserDemoStore((s) => s.projects)
   const [votes, setVotes] = useState(INITIAL_VOTES)
   const [myVotes, setMyVotes] = useState<Set<string>>(() => {
     if (typeof window === 'undefined') return new Set()
@@ -38,9 +39,9 @@ export default function PeoplesChoicePage() {
 
   const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0)
 
-  const countries = [...new Set(DEMO_PROJECTS.map((p) => p.country))].sort()
+  const countries = [...new Set(demoProjects.map((p) => p.country))].sort()
 
-  const sorted = [...DEMO_PROJECTS]
+  const sorted = [...demoProjects]
     .filter((p) => {
       if (filter !== 'all' && p.country !== filter) return false
       if (search) return p.name.toLowerCase().includes(search.toLowerCase()) || p.country.toLowerCase().includes(search.toLowerCase())
@@ -71,7 +72,7 @@ export default function PeoplesChoicePage() {
     }
   }
 
-  const ranked = [...DEMO_PROJECTS].sort((a, b) => (votes[b.id] ?? 0) - (votes[a.id] ?? 0))
+  const ranked = [...demoProjects].sort((a, b) => (votes[b.id] ?? 0) - (votes[a.id] ?? 0))
 
   return (
     <div className="min-h-screen bg-[#F7F8FA]">
@@ -111,7 +112,7 @@ export default function PeoplesChoicePage() {
                   <Heart size={12} /> {totalVotes.toLocaleString()} total votes
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 size={12} /> {DEMO_PROJECTS.length} projects competing
+                  <CheckCircle2 size={12} /> {demoProjects.length} projects competing
                 </span>
                 {!votingClosed && (
                   <span className="text-amber-400">Voting closes: 15 Apr 2026</span>
@@ -168,7 +169,7 @@ export default function PeoplesChoicePage() {
             <div className="flex-1">
               <p className="text-sm font-semibold text-[#0F6E56]">You&apos;ve voted for {myVotes.size}/3 project(s)</p>
               <p className="text-xs text-[#0F6E56] mt-0.5">
-                {DEMO_PROJECTS.filter((p) => myVotes.has(p.id)).map((p) => p.name).join(', ')}
+                {demoProjects.filter((p) => myVotes.has(p.id)).map((p) => p.name).join(', ')}
               </p>
             </div>
             {myVotes.size >= 3 && (

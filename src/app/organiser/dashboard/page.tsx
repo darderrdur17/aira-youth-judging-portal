@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,26 +16,21 @@ import {
   AlertTriangle,
   Mail,
 } from 'lucide-react'
-import {
-  DEMO_ASSIGNMENTS,
-  DEMO_COMPETITION,
-  DEMO_CRITERIA,
-  DEMO_JUDGES,
-  DEMO_PROJECTS,
-  DEMO_SCORES,
-} from '@/lib/demo-data'
+import { DEMO_CRITERIA, DEMO_SCORES } from '@/lib/demo-data'
+import type { Assignment, Judge, Project } from '@/lib/types'
 import { JUDGING_CRITERIA, computeWeightedScore } from '@/lib/types'
+import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 
-function getJudgeProgress() {
-  return DEMO_JUDGES.map((judge) => {
-    const assignments = DEMO_ASSIGNMENTS.filter((a) => a.judge_id === judge.id)
-    const submitted = assignments.filter((a) =>
+function getJudgeProgress(assignments: Assignment[], judges: Judge[]) {
+  return judges.map((judge) => {
+    const judgeAssignments = assignments.filter((a) => a.judge_id === judge.id)
+    const submitted = judgeAssignments.filter((a) =>
       DEMO_SCORES.some((s) => s.assignment_id === a.id && s.submitted_at)
     )
-    const pct = assignments.length > 0 ? (submitted.length / assignments.length) * 100 : 0
+    const pct = judgeAssignments.length > 0 ? (submitted.length / judgeAssignments.length) * 100 : 0
     return {
       judge,
-      total: assignments.length,
+      total: judgeAssignments.length,
       done: submitted.length,
       pct,
       lastActive: submitted.length > 0 ? '2 hours ago' : 'Never',
@@ -42,9 +38,9 @@ function getJudgeProgress() {
   })
 }
 
-function getTopProjects() {
-  return DEMO_PROJECTS.map((project) => {
-    const projectAssignments = DEMO_ASSIGNMENTS.filter((a) => a.project_id === project.id)
+function getTopProjects(assignments: Assignment[], projects: Project[]) {
+  return projects.map((project) => {
+    const projectAssignments = assignments.filter((a) => a.project_id === project.id)
     const projectScores: number[] = []
 
     projectAssignments.forEach((assignment) => {
@@ -71,11 +67,17 @@ function getTopProjects() {
 }
 
 export default function OrganiserDashboardPage() {
-  const judgeProgress = getJudgeProgress()
-  const topProjects = getTopProjects()
+  const projects = useOrganiserDemoStore((s) => s.projects)
+  const judges = useOrganiserDemoStore((s) => s.judges)
+  const assignments = useOrganiserDemoStore((s) => s.assignments)
+  const competitionName = useOrganiserDemoStore((s) => s.competitionName)
+  const competitionDeadline = useOrganiserDemoStore((s) => s.competitionDeadline)
 
-  const totalAssignments = DEMO_ASSIGNMENTS.length
-  const submittedAssignments = DEMO_ASSIGNMENTS.filter((a) =>
+  const judgeProgress = useMemo(() => getJudgeProgress(assignments, judges), [assignments, judges])
+  const topProjects = useMemo(() => getTopProjects(assignments, projects), [assignments, projects])
+
+  const totalAssignments = assignments.length
+  const submittedAssignments = assignments.filter((a) =>
     DEMO_SCORES.some((s) => s.assignment_id === a.id && s.submitted_at)
   ).length
   const overallPct = totalAssignments > 0 ? (submittedAssignments / totalAssignments) * 100 : 0
@@ -87,10 +89,10 @@ export default function OrganiserDashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-[#1A2B3C]">Organiser Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{DEMO_COMPETITION.name}</p>
+          <p className="text-sm text-gray-500 mt-0.5">{competitionName}</p>
         </div>
         <div className="flex items-center gap-2">
-          <DeadlineCountdown deadline={DEMO_COMPETITION.deadline} />
+          <DeadlineCountdown deadline={competitionDeadline} />
           {judgesNeedingReminder.length > 0 && (
             <Button size="sm" className="bg-[#E8735A] hover:bg-[#d4614a] text-white gap-1.5 text-xs">
               <Mail size={12} />
@@ -103,8 +105,8 @@ export default function OrganiserDashboardPage() {
       {/* Overview stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Projects', value: DEMO_PROJECTS.length, icon: <FileText size={16} />, href: '/organiser/projects' },
-          { label: 'Active Judges', value: DEMO_JUDGES.filter((j) => j.is_active).length, icon: <Users size={16} />, href: '/organiser/judges' },
+          { label: 'Total Projects', value: projects.length, icon: <FileText size={16} />, href: '/organiser/projects' },
+          { label: 'Active Judges', value: judges.filter((j) => j.is_active).length, icon: <Users size={16} />, href: '/organiser/judges' },
           { label: 'Scores Submitted', value: submittedAssignments, icon: <CheckCheck size={16} />, href: '/organiser/results' },
           { label: 'Pending', value: totalAssignments - submittedAssignments, icon: <Clock size={16} />, href: '/organiser/assignments' },
         ].map((stat) => (

@@ -1,13 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Mail, ArrowLeft, CheckCircle, Loader2, Users, AlertCircle } from 'lucide-react'
+import { Mail, ArrowLeft, CheckCircle, Loader2, Users, AlertCircle, Lock } from 'lucide-react'
 import { toast } from 'sonner'
 import { DEMO_JUDGES } from '@/lib/demo-data'
 import { useSessionStore } from '@/store/sessionStore'
@@ -41,10 +41,11 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 export default function LoginContent() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const role = searchParams.get('role') ?? 'judge'
   const session = useSessionStore()
+  const [loginMethod, setLoginMethod] = useState<'otp' | 'password'>('otp')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [demoLoading, setDemoLoading] = useState(false)
   const [sent, setSent] = useState(false)
@@ -89,7 +90,7 @@ export default function LoginContent() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleMagicLinkSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email.trim()) return
 
@@ -124,6 +125,52 @@ export default function LoginContent() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to send magic link.')
     } finally {
+      setLoading(false)
+    }
+  }
+
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email.trim() || !password) return
+
+    if (!isSupabaseConfigured()) {
+      toast.error(
+        'Supabase is not configured. Add environment variables or use Demo login.'
+      )
+      return
+    }
+
+    setLoading(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      })
+
+      if (error) {
+        const msg = error.message.toLowerCase()
+        if (msg.includes('invalid login credentials')) {
+          toast.error('Incorrect email or password. If you have not created a password yet, use Magic link or Sign up.')
+        } else if (msg.includes('email not confirmed')) {
+          toast.error('Confirm your email first (check your inbox), then try again.')
+        } else {
+          toast.error(error.message)
+        }
+        setLoading(false)
+        return
+      }
+
+      try {
+        await supabase.rpc('link_judge_to_user')
+      } catch {
+        // optional RPC
+      }
+
+      toast.success('Signed in. Redirecting…')
+      window.location.href = postLoginPath
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Sign in failed.')
       setLoading(false)
     }
   }
@@ -164,8 +211,8 @@ export default function LoginContent() {
               </h1>
               <p className={`text-sm mt-1 ${isOrganiser ? 'text-gray-300' : 'text-[#0F6E56]'}`}>
                 {isOrganiser
-                  ? 'Access competition management, progress tracking, and results export.'
-                  : 'Enter your email to receive a secure magic link.'}
+                  ? 'Sign in with a magic link or email and password. New here? Create an account first.'
+                  : 'Magic link, password, or demo — your organiser must invite your email for full access.'}
               </p>
             </div>
 
@@ -206,7 +253,43 @@ export default function LoginContent() {
                   </Button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form
+                  onSubmit={loginMethod === 'otp' ? handleMagicLinkSubmit : handlePasswordLogin}
+                  className="space-y-4"
+                >
+                  <div
+                    className="flex rounded-lg border border-gray-200 bg-gray-50 p-1 gap-1"
+                    role="tablist"
+                    aria-label="Sign-in method"
+                  >
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={loginMethod === 'otp'}
+                      onClick={() => setLoginMethod('otp')}
+                      className={`flex-1 rounded-md py-2 text-xs font-medium transition-colors ${
+                        loginMethod === 'otp'
+                          ? 'bg-white text-[#1A2B3C] shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Magic link
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={loginMethod === 'password'}
+                      onClick={() => setLoginMethod('password')}
+                      className={`flex-1 rounded-md py-2 text-xs font-medium transition-colors ${
+                        loginMethod === 'password'
+                          ? 'bg-white text-[#1A2B3C] shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Email &amp; password
+                    </button>
+                  </div>
+
                   <div className="space-y-1.5">
                     <Label htmlFor="email" className="text-sm text-[#1A2B3C] font-medium">
                       Email address
@@ -216,6 +299,7 @@ export default function LoginContent() {
                       <Input
                         id="email"
                         type="email"
+                        autoComplete="email"
                         placeholder={isOrganiser ? 'organiser@example.com' : 'judge@example.com'}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -224,23 +308,63 @@ export default function LoginContent() {
                     </div>
                   </div>
 
+                  {loginMethod === 'password' && (
+                    <div className="space-y-1.5">
+                      <Label htmlFor="password" className="text-sm text-[#1A2B3C] font-medium">
+                        Password
+                      </Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
+                        <Input
+                          id="password"
+                          type="password"
+                          autoComplete="current-password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pl-9 border-gray-200 focus-visible:ring-[#1D9E8B]"
+                          required={loginMethod === 'password'}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <Button
                     type="submit"
-                    disabled={loading || !email.trim() || !isSupabaseConfigured()}
+                    disabled={
+                      loading ||
+                      !email.trim() ||
+                      !isSupabaseConfigured() ||
+                      (loginMethod === 'password' && !password)
+                    }
                     className="w-full bg-[#1D9E8B] hover:bg-[#0F6E56] text-white gap-2"
                   >
                     {loading ? (
                       <>
                         <Loader2 size={15} className="animate-spin" />
-                        Sending link...
+                        {loginMethod === 'otp' ? 'Sending link...' : 'Signing in...'}
                       </>
-                    ) : (
+                    ) : loginMethod === 'otp' ? (
                       <>
                         <Mail size={15} />
                         Send Magic Link
                       </>
+                    ) : (
+                      <>
+                        <Lock size={15} />
+                        Sign in
+                      </>
                     )}
                   </Button>
+
+                  <p className="text-center text-xs text-gray-500">
+                    New user?{' '}
+                    <Link
+                      href={`/auth/sign-up?role=${isOrganiser ? 'organiser' : 'judge'}`}
+                      className="text-[#1D9E8B] font-medium hover:underline"
+                    >
+                      Create an account
+                    </Link>
+                  </p>
 
                   <div className="relative my-2">
                     <div className="absolute inset-0 flex items-center">

@@ -23,7 +23,14 @@ import {
   Trash2,
   GripVertical,
 } from 'lucide-react'
-import { JUDGING_CRITERIA, TOTAL_MAX_SCORE } from '@/lib/types'
+import { JUDGING_CRITERIA } from '@/lib/types'
+import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
+
+function isoToLocalDatetimeInput(iso: string): string {
+  const d = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
 
 type CompetitionType = 'ideathon' | 'prize_based' | 'programming' | 'competition'
 
@@ -109,10 +116,14 @@ const INFO_ROWS = [
 ]
 
 export default function CompetitionSetupPage() {
+  const setCompetitionMeta = useOrganiserDemoStore((s) => s.setCompetitionMeta)
+
   const [selectedType, setSelectedType] = useState<CompetitionType>('ideathon')
-  const [competitionName, setCompetitionName] = useState('AI Ready ASEAN Youth Challenge 2026')
+  const [competitionName, setCompetitionName] = useState(() => useOrganiserDemoStore.getState().competitionName)
   const [slug, setSlug] = useState('airayc-2026')
-  const [deadline, setDeadline] = useState('2026-04-15T12:00')
+  const [deadline, setDeadline] = useState(() =>
+    isoToLocalDatetimeInput(useOrganiserDemoStore.getState().competitionDeadline)
+  )
   const [criteria, setCriteria] = useState(JUDGING_CRITERIA.map((c) => ({ ...c })))
   const [saved, setSaved] = useState(false)
 
@@ -124,8 +135,12 @@ export default function CompetitionSetupPage() {
       return
     }
     await new Promise((r) => setTimeout(r, 600))
+    setCompetitionMeta({
+      competitionName: competitionName.trim(),
+      competitionDeadline: new Date(deadline).toISOString(),
+    })
     setSaved(true)
-    toast.success('Competition settings saved.')
+    toast.success('Competition settings saved. Dashboard and countdown use the new name and deadline.')
   }
 
   const updateWeight = (idx: number, val: number) => {

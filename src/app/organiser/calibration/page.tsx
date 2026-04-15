@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { CountryBadge } from '@/components/shared/CountryBadge'
@@ -18,23 +19,19 @@ import {
   ReferenceLine,
 } from 'recharts'
 import { AlertTriangle, TrendingUp, BarChart2 } from 'lucide-react'
-import {
-  DEMO_ASSIGNMENTS,
-  DEMO_CRITERIA,
-  DEMO_JUDGES,
-  DEMO_PROJECTS,
-  DEMO_SCORES,
-} from '@/lib/demo-data'
+import { DEMO_CRITERIA, DEMO_SCORES } from '@/lib/demo-data'
+import type { Assignment, Judge, Project } from '@/lib/types'
 import { computeWeightedScore, JUDGING_CRITERIA, TOTAL_MAX_SCORE } from '@/lib/types'
+import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 
 // Build per-judge scoring profiles
-function buildCalibrationData() {
-  const judgeProfiles = DEMO_JUDGES.map((judge) => {
-    const assignments = DEMO_ASSIGNMENTS.filter((a) => a.judge_id === judge.id)
+function buildCalibrationData(assignments: Assignment[], judges: Judge[], projects: Project[]) {
+  const judgeProfiles = judges.map((judge) => {
+    const judgeAssignments = assignments.filter((a) => a.judge_id === judge.id)
     const allScores: number[] = []
     const criterionAverages: Record<string, number[]> = {}
 
-    assignments.forEach((assignment) => {
+    judgeAssignments.forEach((assignment) => {
       const scores = DEMO_SCORES.filter((s) => s.assignment_id === assignment.id && s.submitted_at)
       scores.forEach((s) => {
         allScores.push(s.score)
@@ -62,11 +59,11 @@ function buildCalibrationData() {
   })
 
   // Per-project cross-judge comparison
-  const projectComparisons = DEMO_PROJECTS.map((project) => {
-    const assignments = DEMO_ASSIGNMENTS.filter((a) => a.project_id === project.id)
+  const projectComparisons = projects.map((project) => {
+    const projectAssignments = assignments.filter((a) => a.project_id === project.id)
     const judgeScores: { judgeName: string; total: number }[] = []
 
-    assignments.forEach((a) => {
+    projectAssignments.forEach((a) => {
       const scores = DEMO_SCORES.filter((s) => s.assignment_id === a.id && s.submitted_at)
       if (scores.length === JUDGING_CRITERIA.length) {
         const map: Record<string, number> = {}
@@ -74,7 +71,7 @@ function buildCalibrationData() {
           const c = DEMO_CRITERIA.find((cr) => cr.id === s.criterion_id)
           if (c) map[c.key] = s.score
         })
-        const judge = DEMO_JUDGES.find((j) => j.id === a.judge_id)
+        const judge = judges.find((j) => j.id === a.judge_id)
         judgeScores.push({ judgeName: judge?.name ?? '?', total: computeWeightedScore(map, JUDGING_CRITERIA) })
       }
     })
@@ -95,7 +92,13 @@ function buildCalibrationData() {
 const JUDGE_COLORS = ['#1D9E8B', '#3A7BD5', '#7C5CBF', '#E8735A', '#F5A623']
 
 export default function CalibrationPage() {
-  const { judgeProfiles, projectComparisons } = buildCalibrationData()
+  const projects = useOrganiserDemoStore((s) => s.projects)
+  const judges = useOrganiserDemoStore((s) => s.judges)
+  const assignments = useOrganiserDemoStore((s) => s.assignments)
+  const { judgeProfiles, projectComparisons } = useMemo(
+    () => buildCalibrationData(assignments, judges, projects),
+    [assignments, judges, projects]
+  )
 
   const globalAvg = judgeProfiles.reduce((s, j) => s + j.avg, 0) / judgeProfiles.length
 

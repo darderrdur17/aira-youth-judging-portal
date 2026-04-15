@@ -16,28 +16,37 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Plus, Search, Mail, UserX, Send, CheckCircle2, Clock, AlertTriangle } from 'lucide-react'
+import { Plus, Search, Mail, UserX, Send, CheckCircle2, Clock, AlertTriangle, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
-import { DEMO_ASSIGNMENTS, DEMO_JUDGES, DEMO_SCORES } from '@/lib/demo-data'
+import { DEMO_SCORES } from '@/lib/demo-data'
+import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 
 export default function OrganiserJudgesPage() {
-  const [judges, setJudges] = useState(DEMO_JUDGES)
+  const judges = useOrganiserDemoStore((s) => s.judges)
+  const assignments = useOrganiserDemoStore((s) => s.assignments)
+  const addJudge = useOrganiserDemoStore((s) => s.addJudge)
+  const updateJudge = useOrganiserDemoStore((s) => s.updateJudge)
+
   const [search, setSearch] = useState('')
   const [addOpen, setAddOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editId, setEditId] = useState<string | null>(null)
   const [newJudge, setNewJudge] = useState({ name: '', email: '' })
+  const [editJudge, setEditJudge] = useState({ name: '', email: '' })
   const [sending, setSending] = useState<string | null>(null)
 
   const getJudgeStats = (judgeId: string) => {
-    const assignments = DEMO_ASSIGNMENTS.filter((a) => a.judge_id === judgeId)
-    const submitted = assignments.filter((a) =>
+    const assigns = assignments.filter((a) => a.judge_id === judgeId)
+    const submitted = assigns.filter((a) =>
       DEMO_SCORES.some((s) => s.assignment_id === a.id && s.submitted_at)
     )
-    const pct = assignments.length > 0 ? (submitted.length / assignments.length) * 100 : 0
-    return { total: assignments.length, done: submitted.length, pct }
+    const pct = assigns.length > 0 ? (submitted.length / assigns.length) * 100 : 0
+    return { total: assigns.length, done: submitted.length, pct }
   }
 
   const filtered = judges.filter((j) => {
@@ -59,10 +68,29 @@ export default function OrganiserJudgesPage() {
       is_active: true,
       created_at: new Date().toISOString(),
     }
-    setJudges([...judges, judge])
+    addJudge(judge)
     setNewJudge({ name: '', email: '' })
     setAddOpen(false)
     toast.success(`Magic link invitation sent to ${judge.email}.`)
+  }
+
+  const openEditJudge = (id: string) => {
+    const j = judges.find((x) => x.id === id)
+    if (!j) return
+    setEditId(id)
+    setEditJudge({ name: j.name, email: j.email })
+    setEditOpen(true)
+  }
+
+  const handleSaveJudgeEdit = () => {
+    if (!editId || !editJudge.name.trim() || !editJudge.email.trim()) {
+      toast.error('Name and email are required.')
+      return
+    }
+    updateJudge(editId, { name: editJudge.name.trim(), email: editJudge.email.trim().toLowerCase() })
+    setEditOpen(false)
+    setEditId(null)
+    toast.success('Judge details updated.')
   }
 
   const handleSendReminder = async (judgeId: string, judgeName: string) => {
@@ -73,9 +101,10 @@ export default function OrganiserJudgesPage() {
   }
 
   const handleDeactivate = (judgeId: string, judgeName: string) => {
-    setJudges(judges.map((j) => j.id === judgeId ? { ...j, is_active: !j.is_active } : j))
     const judge = judges.find((j) => j.id === judgeId)
-    toast.success(`${judgeName} ${judge?.is_active ? 'deactivated' : 'reactivated'}.`)
+    if (!judge) return
+    updateJudge(judgeId, { is_active: !judge.is_active })
+    toast.success(`${judgeName} ${judge.is_active ? 'deactivated' : 'reactivated'}.`)
   }
 
   const needingReminder = judges.filter((j) => {
@@ -114,6 +143,9 @@ export default function OrganiserJudgesPage() {
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle className="text-[#1A2B3C]">Invite Judge</DialogTitle>
+                <DialogDescription className="text-gray-600 text-sm">
+                  Add a new judge. They will receive a magic link at this email.
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 pt-2">
                 <div className="space-y-1.5">
@@ -142,6 +174,42 @@ export default function OrganiserJudgesPage() {
                   <Button variant="outline" size="sm" onClick={() => setAddOpen(false)}>Cancel</Button>
                   <Button size="sm" onClick={handleInvite} className="bg-[#1D9E8B] hover:bg-[#0F6E56] text-white gap-1.5">
                     <Send size={12} /> Send Invitation
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setEditId(null) }}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-[#1A2B3C]">Edit judge</DialogTitle>
+                <DialogDescription className="text-gray-600 text-sm">
+                  Update the name or email on file. Assignments and scores stay linked to this judge.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Full name</Label>
+                  <Input
+                    value={editJudge.name}
+                    onChange={(e) => setEditJudge({ ...editJudge, name: e.target.value })}
+                    className="text-sm"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Email</Label>
+                  <Input
+                    type="email"
+                    value={editJudge.email}
+                    onChange={(e) => setEditJudge({ ...editJudge, email: e.target.value })}
+                    className="text-sm"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-1">
+                  <Button variant="outline" size="sm" onClick={() => setEditOpen(false)}>Cancel</Button>
+                  <Button size="sm" onClick={handleSaveJudgeEdit} className="bg-[#1D9E8B] hover:bg-[#0F6E56] text-white">
+                    Save changes
                   </Button>
                 </div>
               </div>
@@ -218,7 +286,16 @@ export default function OrganiserJudgesPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1.5 flex-wrap">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditJudge(judge.id)}
+                        className="h-7 px-2 text-[10px] border-gray-200 gap-1"
+                      >
+                        <Pencil size={11} />
+                        Edit
+                      </Button>
                       {judge.is_active && stats.pct < 100 && (
                         <Button
                           variant="outline"

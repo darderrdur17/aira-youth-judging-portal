@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CountryBadge } from '@/components/shared/CountryBadge'
@@ -24,20 +24,14 @@ import {
 } from 'recharts'
 import { Download, ChevronDown, ChevronRight, Trophy } from 'lucide-react'
 import { toast } from 'sonner'
-import {
-  DEMO_ASSIGNMENTS,
-  DEMO_COMPETITION,
-  DEMO_CRITERIA,
-  DEMO_FEEDBACK,
-  DEMO_JUDGES,
-  DEMO_PROJECTS,
-  DEMO_SCORES,
-} from '@/lib/demo-data'
+import { DEMO_COMPETITION, DEMO_CRITERIA, DEMO_FEEDBACK, DEMO_SCORES } from '@/lib/demo-data'
+import type { Assignment, Judge, Project } from '@/lib/types'
 import { JUDGING_CRITERIA, TOTAL_MAX_SCORE, computeWeightedScore } from '@/lib/types'
+import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 
-function buildResults() {
-  return DEMO_PROJECTS.map((project) => {
-    const projectAssignments = DEMO_ASSIGNMENTS.filter((a) => a.project_id === project.id)
+function buildResults(projects: Project[], assignments: Assignment[], judges: Judge[]) {
+  return projects.map((project) => {
+    const projectAssignments = assignments.filter((a) => a.project_id === project.id)
     const judgeBreakdown: { judgeId: string; judgeName: string; score: number; scoreMap: Record<string, number> }[] = []
 
     projectAssignments.forEach((assignment) => {
@@ -48,7 +42,7 @@ function buildResults() {
           const crit = DEMO_CRITERIA.find((c) => c.id === s.criterion_id)
           if (crit) map[crit.key] = s.score
         })
-        const judge = DEMO_JUDGES.find((j) => j.id === assignment.judge_id)
+        const judge = judges.find((j) => j.id === assignment.judge_id)
         judgeBreakdown.push({
           judgeId: assignment.judge_id,
           judgeName: judge?.name ?? 'Unknown',
@@ -84,13 +78,22 @@ function buildResults() {
 }
 
 export default function OrganiserResultsPage() {
-  const results = buildResults()
+  const projects = useOrganiserDemoStore((s) => s.projects)
+  const assignments = useOrganiserDemoStore((s) => s.assignments)
+  const judges = useOrganiserDemoStore((s) => s.judges)
+  const results = useMemo(
+    () => buildResults(projects, assignments, judges),
+    [projects, assignments, judges]
+  )
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
   const toggleExpand = (id: string) => {
-    const s = new Set(expanded)
-    s.has(id) ? s.delete(id) : s.add(id)
-    setExpanded(s)
+    setExpanded((prev) => {
+      const s = new Set(prev)
+      if (s.has(id)) s.delete(id)
+      else s.add(id)
+      return s
+    })
   }
 
   const handleExportCSV = () => {

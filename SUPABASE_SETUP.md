@@ -139,6 +139,19 @@ ORGANISER_EMAILS=you@yourdomain.com,backup@yourdomain.com
 2. Ensure **“Confirm email”** / signup behaviour matches your workflow. For hackathon judges, teams often allow the magic link to create the user on first sign-in.
 3. After a user clicks the magic link, they appear under **Authentication → Users** (this is the “account saved in Supabase”).
 
+### Email + password sign-up (Create account)
+
+The app exposes **`/auth/sign-up?role=judge`** and **`/auth/sign-up?role=organiser`**. Users register with email + password; Supabase creates the `auth.users` row.
+
+1. Keep the **Email** provider **enabled** (same as for magic links).
+2. Under **Authentication → Providers → Email**, ensure **“Confirm email”** is configured the way you want:
+   - If **enabled**, users must click the confirmation link (redirects to `/auth/callback` — same as magic links).
+   - If **disabled**, users can sign in with password immediately after sign-up (development only; not recommended for production).
+3. **Redirect URLs** must include your `/auth/callback` URL (see Step 4) so confirmation and OAuth-style flows complete.
+4. After confirmation, judges should still have a **`judges`** row with the same email; `link_judge_to_user()` links `user_id` on login. Organisers need **`ORGANISER_EMAILS`** or **`competitions.created_by`** as documented below.
+
+Login page supports **Magic link** and **Email & password** for returning users.
+
 ### Judge ↔ auth account linking
 
 The SQL function `link_judge_to_user()` (in `supabase-schema.sql`) runs after login and sets `judges.user_id` for any row where `judges.email` matches the signed-in user. **Invite the judge first** (row in `judges` with their email) so RLS and dashboards work.

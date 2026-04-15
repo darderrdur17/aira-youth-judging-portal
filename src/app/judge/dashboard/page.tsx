@@ -21,14 +21,10 @@ import {
   Flag,
   AlertTriangle,
 } from 'lucide-react'
-import {
-  DEMO_ASSIGNMENTS,
-  DEMO_COMPETITION,
-  DEMO_PROJECTS,
-} from '@/lib/demo-data'
 import { computeWeightedScore, JUDGING_CRITERIA, TOTAL_MAX_SCORE } from '@/lib/types'
 import { useJudgeStore } from '@/store/judgeStore'
 import { useSessionStore } from '@/store/sessionStore'
+import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 
 type SortMode = 'assigned' | 'score'
 type FilterTab = 'all' | 'pending' | 'judged' | 'flagged'
@@ -36,15 +32,19 @@ type FilterTab = 'all' | 'pending' | 'judged' | 'flagged'
 export default function JudgeDashboardPage() {
   const store = useJudgeStore()
   const session = useSessionStore()
+  const assignments = useOrganiserDemoStore((s) => s.assignments)
+  const projects = useOrganiserDemoStore((s) => s.projects)
+  const competitionName = useOrganiserDemoStore((s) => s.competitionName)
+  const competitionDeadline = useOrganiserDemoStore((s) => s.competitionDeadline)
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<FilterTab>('all')
   const [sort, setSort] = useState<SortMode>('assigned')
 
   const judgeId = session.demo.judgeId ?? 'judge-001'
-  const myAssignments = DEMO_ASSIGNMENTS.filter((a) => a.judge_id === judgeId)
+  const myAssignments = assignments.filter((a) => a.judge_id === judgeId)
 
   const rows = myAssignments.map((assignment) => {
-    const project = DEMO_PROJECTS.find((p) => p.id === assignment.project_id)!
+    const project = projects.find((p) => p.id === assignment.project_id)!
     const state = store.getAssignment(assignment.id)
     const scoredCount = Object.keys(state.scores).length
     const weightedTotal =
@@ -96,9 +96,9 @@ export default function JudgeDashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-[#1A2B3C]">My Assignments</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{DEMO_COMPETITION.name}</p>
+          <p className="text-sm text-gray-500 mt-0.5">{competitionName}</p>
         </div>
-        <DeadlineCountdown deadline={DEMO_COMPETITION.deadline} />
+        <DeadlineCountdown deadline={competitionDeadline} />
       </div>
 
       {/* Stats bar */}

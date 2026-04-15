@@ -29,16 +29,14 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
-  DEMO_ASSIGNMENTS,
-  DEMO_COMPETITION,
   DEMO_CRITERIA,
   DEMO_FEEDBACK,
-  DEMO_PROJECTS,
   DEMO_SCORES,
 } from '@/lib/demo-data'
 import { computeWeightedScore, JUDGING_CRITERIA, TOTAL_MAX_SCORE } from '@/lib/types'
 import { useJudgeStore } from '@/store/judgeStore'
 import { useSessionStore } from '@/store/sessionStore'
+import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 
 const SCORE_LABELS: Record<number, string> = {
   1: 'Very Poor', 2: 'Poor', 3: 'Below Average', 4: 'Adequate',
@@ -57,8 +55,12 @@ export default function ScoringPage() {
   const router = useRouter()
   const assignmentId = params.assignmentId as string
 
-  const assignment = DEMO_ASSIGNMENTS.find((a) => a.id === assignmentId)
-  const project = assignment ? DEMO_PROJECTS.find((p) => p.id === assignment.project_id) : null
+  const assignments = useOrganiserDemoStore((s) => s.assignments)
+  const projects = useOrganiserDemoStore((s) => s.projects)
+  const competitionDeadline = useOrganiserDemoStore((s) => s.competitionDeadline)
+
+  const assignment = assignments.find((a) => a.id === assignmentId)
+  const project = assignment ? projects.find((p) => p.id === assignment.project_id) : null
 
   // Seed initial state from demo data
   const store = useJudgeStore()
@@ -125,7 +127,7 @@ export default function ScoringPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCriterionIdx, assignmentId])
 
-  const isDeadlinePassed = new Date(DEMO_COMPETITION.deadline) < new Date()
+  const isDeadlinePassed = new Date(competitionDeadline) < new Date()
   const allScored = JUDGING_CRITERIA.every((c) => state.scores[c.key] !== undefined)
   const weightedTotal = computeWeightedScore(state.scores, JUDGING_CRITERIA)
   const scoredCount = Object.keys(state.scores).length
@@ -161,7 +163,7 @@ export default function ScoringPage() {
   }
 
   const judgeId = session.demo.judgeId ?? 'judge-001'
-  const allAssignmentIds = DEMO_ASSIGNMENTS
+  const allAssignmentIds = assignments
     .filter((a) => a.judge_id === judgeId)
     .map((a) => a.id)
   const currentIdx = allAssignmentIds.indexOf(assignmentId)
@@ -230,7 +232,7 @@ export default function ScoringPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <DeadlineCountdown deadline={DEMO_COMPETITION.deadline} />
+                <DeadlineCountdown deadline={competitionDeadline} />
                 {!isDeadlinePassed && (
                   <Button
                     variant="outline"

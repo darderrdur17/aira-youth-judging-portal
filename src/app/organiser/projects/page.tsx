@@ -40,9 +40,10 @@ import {
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { DEMO_ASSIGNMENTS, DEMO_PROJECTS, DEMO_SCORES } from '@/lib/demo-data'
+import { DEMO_SCORES } from '@/lib/demo-data'
 import type { Country } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 
 const MAX_PDF_BYTES = 20 * 1024 * 1024 // 20 MB — typical cap for browser demo; use cloud storage in production
 
@@ -61,15 +62,27 @@ const ASEAN_COUNTRIES: Country[] = [
 ]
 
 export default function OrganiserProjectsPage() {
-  const [projects, setProjects] = useState(DEMO_PROJECTS)
+  const projects = useOrganiserDemoStore((s) => s.projects)
+  const assignments = useOrganiserDemoStore((s) => s.assignments)
+  const addProject = useOrganiserDemoStore((s) => s.addProject)
+  const updateProject = useOrganiserDemoStore((s) => s.updateProject)
+  const deleteProject = useOrganiserDemoStore((s) => s.deleteProject)
+
   const [search, setSearch] = useState('')
   const [addOpen, setAddOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editId, setEditId] = useState<string | null>(null)
   const [newProject, setNewProject] = useState({ name: '', country: '' as Country | '', video_url: '' })
+  const [editForm, setEditForm] = useState({ name: '', country: '' as Country | '', video_url: '' })
   const [pdfFile, setPdfFile] = useState<File | null>(null)
+  const [editPdfFile, setEditPdfFile] = useState<File | null>(null)
   const [pdfDragging, setPdfDragging] = useState(false)
+  const [editPdfDragging, setEditPdfDragging] = useState(false)
   const [addSubmitting, setAddSubmitting] = useState(false)
+  const [editSubmitting, setEditSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const pdfInputRef = useRef<HTMLInputElement>(null)
+  const editPdfInputRef = useRef<HTMLInputElement>(null)
 
   const resetAddForm = useCallback(() => {
     setNewProject({ name: '', country: '', video_url: '' })
@@ -93,16 +106,31 @@ export default function OrganiserProjectsPage() {
     toast.success(`“${file.name}” is ready to attach.`)
   }, [])
 
+  const validateAndSetEditPdf = useCallback((file: File) => {
+    const looksPdf =
+      file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+    if (!looksPdf) {
+      toast.error('Please choose a PDF file (ends in .pdf).')
+      return
+    }
+    if (file.size > MAX_PDF_BYTES) {
+      toast.error(`PDF is too large. Maximum size is ${MAX_PDF_BYTES / (1024 * 1024)} MB.`)
+      return
+    }
+    setEditPdfFile(file)
+    toast.success(`“${file.name}” will replace the saved PDF when you save changes.`)
+  }, [])
+
   const filtered = projects.filter((p) => {
     const q = search.toLowerCase()
     return p.name.toLowerCase().includes(q) || p.country.toLowerCase().includes(q)
   })
 
   const getAssignmentCount = (projectId: string) =>
-    DEMO_ASSIGNMENTS.filter((a) => a.project_id === projectId).length
+    assignments.filter((a) => a.project_id === projectId).length
 
   const getSubmittedCount = (projectId: string) =>
-    DEMO_ASSIGNMENTS.filter(
+    assignments.filter(
       (a) =>
         a.project_id === projectId &&
         DEMO_SCORES.some((s) => s.assignment_id === a.id && s.submitted_at)
@@ -135,11 +163,62 @@ export default function OrganiserProjectsPage() {
       metadata: null,
       created_at: new Date().toISOString(),
     }
-    setProjects([...projects, project])
+    addProject(project)
     resetAddForm()
     setAddOpen(false)
     setAddSubmitting(false)
     toast.success(`“${project.name}” was added${hadPdf ? ' with your PDF' : ''}.`)
+  }
+
+  const openEdit = (projectId: string) => {
+    const p = projects.find((x) => x.id === projectId)
+    if (!p) return
+    setEditId(p.id)
+    setEditForm({
+      name: p.name,
+      country: p.country,
+      video_url: p.video_url ?? '',
+    })
+    setEditPdfFile(null)
+    setEditPdfDragging(false)
+    setEditOpen(true)
+  }
+
+  const resetEditForm = () => {
+    setEditId(null)
+    setEditForm({ name: '', country: '', video_url: '' })
+    setEditPdfFile(null)
+    setEditPdfDragging(false)
+    setEditSubmitting(false)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editId || !editForm.name.trim() || !editForm.country) {
+      toast.error('Please enter a project name and choose a country.')
+      return
+    }
+    setEditSubmitting(true)
+    let pdf_url: string | null | undefined = undefined
+    if (editPdfFile) {
+      try {
+        pdf_url = await readFileAsDataURL(editPdfFile)
+      } catch {
+        setEditSubmitting(false)
+        toast.error('Could not read the PDF.')
+        return
+      }
+    }
+    const patch = {
+      name: editForm.name.trim(),
+      country: editForm.country as Country,
+      video_url: editForm.video_url.trim() || null,
+      ...(pdf_url !== undefined ? { pdf_url } : {}),
+    }
+    updateProject(editId, patch)
+    setEditOpen(false)
+    resetEditForm()
+    setEditSubmitting(false)
+    toast.success('Project updated.')
   }
 
   const handleCSVImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,7 +256,7 @@ export default function OrganiserProjectsPage() {
         }
       }).filter((p) => p.name)
 
-      setProjects([...projects, ...imported])
+      imported.forEach((p) => addProject(p))
       toast.success(`${imported.length} project(s) imported from CSV.`)
     }
     reader.readAsText(file)
@@ -407,6 +486,159 @@ export default function OrganiserProjectsPage() {
               </div>
             </DialogContent>
           </Dialog>
+
+          <Dialog
+            open={editOpen}
+            onOpenChange={(open) => {
+              setEditOpen(open)
+              if (!open) resetEditForm()
+            }}
+          >
+            <DialogContent className="max-w-lg gap-0 sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="text-[#1A2B3C] text-lg">Edit project</DialogTitle>
+                <DialogDescription className="text-gray-600 text-sm leading-relaxed">
+                  Update team details, video link, or replace the PDF. Changes apply everywhere judges and results use this project.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-4 max-h-[min(70vh,32rem)] overflow-y-auto pr-1">
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-project-name" className="text-sm font-medium text-[#1A2B3C]">
+                    Team / project name <span className="text-red-600">*</span>
+                  </Label>
+                  <Input
+                    id="edit-project-name"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    className="text-sm h-10"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-project-country" className="text-sm font-medium text-[#1A2B3C]">
+                    Country <span className="text-red-600">*</span>
+                  </Label>
+                  <Select
+                    value={editForm.country || undefined}
+                    onValueChange={(v) => setEditForm({ ...editForm, country: (v ?? '') as Country })}
+                  >
+                    <SelectTrigger id="edit-project-country" className="text-sm h-10 w-full">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ASEAN_COUNTRIES.map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-[#1A2B3C]">Written proposal (PDF)</Label>
+                  <p className="text-xs text-gray-500 -mt-1">
+                    {editId && projects.find((p) => p.id === editId)?.pdf_url && !editPdfFile
+                      ? 'A PDF is already attached. Upload a new file below to replace it.'
+                      : 'Optional. Upload to attach or replace the PDF.'}
+                  </p>
+                  <input
+                    ref={editPdfInputRef}
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    className="sr-only"
+                    aria-label="Replace PDF file"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0]
+                      if (f) validateAndSetEditPdf(f)
+                      e.target.value = ''
+                    }}
+                  />
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Drop PDF to replace"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        editPdfInputRef.current?.click()
+                      }
+                    }}
+                    onDragEnter={(e) => {
+                      e.preventDefault()
+                      setEditPdfDragging(true)
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      setEditPdfDragging(true)
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault()
+                      if (!e.currentTarget.contains(e.relatedTarget as Node)) setEditPdfDragging(false)
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      setEditPdfDragging(false)
+                      const f = e.dataTransfer.files?.[0]
+                      if (f) validateAndSetEditPdf(f)
+                    }}
+                    onClick={() => editPdfInputRef.current?.click()}
+                    className={cn(
+                      'rounded-lg border-2 border-dashed px-4 py-6 text-center cursor-pointer transition-colors min-h-[5rem] flex flex-col items-center justify-center gap-2',
+                      editPdfDragging
+                        ? 'border-[#1D9E8B] bg-[#E1F5EE] shadow-[inset_0_0_0_2px_rgba(29,158,139,0.15)]'
+                        : 'border-gray-300 bg-[#F4F6F8] hover:border-[#1D9E8B] hover:bg-[#E8F5F2]'
+                    )}
+                  >
+                    {editPdfFile ? (
+                      <>
+                        <FileText className="text-[#1D9E8B]" size={24} aria-hidden />
+                        <p className="text-sm font-medium text-[#1A2B3C] break-all max-w-full px-2">{editPdfFile.name}</p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="mt-1 gap-1"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditPdfFile(null)
+                          }}
+                        >
+                          <X size={14} /> Keep existing PDF
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="text-gray-400" size={24} aria-hidden />
+                        <p className="text-sm text-[#1A2B3C]">Drop or click to replace PDF</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-video-url" className="text-sm font-medium text-[#1A2B3C]">
+                    Video link <span className="text-gray-400 font-normal">(optional)</span>
+                  </Label>
+                  <Input
+                    id="edit-video-url"
+                    type="url"
+                    value={editForm.video_url}
+                    onChange={(e) => setEditForm({ ...editForm, video_url: e.target.value })}
+                    className="text-sm h-10"
+                  />
+                </div>
+                <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2 border-t border-gray-100">
+                  <Button variant="outline" size="sm" className="h-10" disabled={editSubmitting} onClick={() => setEditOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="h-10 bg-[#1D9E8B] hover:bg-[#0F6E56] text-white min-w-[8rem]"
+                    disabled={editSubmitting}
+                    onClick={() => void handleSaveEdit()}
+                  >
+                    {editSubmitting ? 'Saving…' : 'Save changes'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -487,14 +719,21 @@ export default function OrganiserProjectsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <button className="w-7 h-7 rounded hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-[#1D9E8B]">
+                      <button
+                        type="button"
+                        title="Edit project"
+                        className="w-7 h-7 rounded hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-[#1D9E8B]"
+                        onClick={() => openEdit(project.id)}
+                      >
                         <Edit size={13} />
                       </button>
                       <button
+                        type="button"
+                        title="Remove project"
                         className="w-7 h-7 rounded hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500"
                         onClick={() => {
-                          setProjects(projects.filter((p) => p.id !== project.id))
-                          toast.success(`"${project.name}" removed.`)
+                          deleteProject(project.id)
+                          toast.success(`“${project.name}” removed.`)
                         }}
                       >
                         <Trash2 size={13} />
