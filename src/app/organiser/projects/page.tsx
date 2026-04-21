@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { CountryBadge } from '@/components/shared/CountryBadge'
@@ -41,9 +41,10 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { DEMO_SCORES } from '@/lib/demo-data'
-import type { Country } from '@/lib/types'
+import type { Country, Project } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
+import { parseCsvText } from '@/lib/csv'
 
 const MAX_PDF_BYTES = 20 * 1024 * 1024 // 20 MB — typical cap for browser demo; use cloud storage in production
 
@@ -60,6 +61,64 @@ const ASEAN_COUNTRIES: Country[] = [
   'Brunei', 'Cambodia', 'Indonesia', 'Laos', 'Malaysia',
   'Myanmar', 'Philippines', 'Singapore', 'Thailand', 'Timor-Leste', 'Vietnam',
 ]
+
+function normalizeHeaderCell(h: string) {
+  return h.trim().toLowerCase().replace(/\s+/g, '_')
+}
+
+function importProjectsFromMatrix(
+  matrix: string[][],
+  addProject: (p: Project) => void
+): { imported: number; skipped: number } {
+  if (matrix.length < 2) return { imported: 0, skipped: 0 }
+  const header = matrix[0].map(normalizeHeaderCell)
+  const nameIdx = header.findIndex(
+    (h) => h === 'project_name' || h === 'name' || h === 'team' || h === 'project'
+  )
+  const countryIdx = header.indexOf('country')
+  const pdfIdx = header.indexOf('pdf_url')
+  const videoIdx = header.indexOf('video_url')
+
+  if (nameIdx === -1 || countryIdx === -1) {
+    toast.error('File must include project_name (or name) and country columns.')
+    return { imported: 0, skipped: 0 }
+  }
+
+  let imported = 0
+  let skipped = 0
+
+  for (let r = 1; r < matrix.length; r++) {
+    const cols = [...matrix[r]]
+    while (cols.length < header.length) cols.push('')
+    const nameVal = cols[nameIdx]?.trim()
+    const rawCountry = cols[countryIdx]?.trim()
+    if (!nameVal) {
+      skipped++
+      continue
+    }
+    if (!ASEAN_COUNTRIES.includes(rawCountry as Country)) {
+      skipped++
+      continue
+    }
+    const countryVal = rawCountry as Country
+    const pdfCell = pdfIdx !== -1 ? cols[pdfIdx]?.trim() : ''
+    const videoCell = videoIdx !== -1 ? cols[videoIdx]?.trim() : ''
+
+    addProject({
+      id: `proj-import-${Date.now()}-${r}-${Math.random().toString(36).slice(2, 7)}`,
+      competition_id: 'comp-2026',
+      name: nameVal,
+      country: countryVal,
+      pdf_url: pdfCell || null,
+      video_url: videoCell || null,
+      metadata: null,
+      created_at: new Date().toISOString(),
+    })
+    imported++
+  }
+
+  return { imported, skipped }
+}
 
 export default function OrganiserProjectsPage() {
   const projects = useOrganiserDemoStore((s) => s.projects)
@@ -81,6 +140,7 @@ export default function OrganiserProjectsPage() {
   const [addSubmitting, setAddSubmitting] = useState(false)
   const [editSubmitting, setEditSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const xlsxInputRef = useRef<HTMLInputElement>(null)
   const pdfInputRef = useRef<HTMLInputElement>(null)
   const editPdfInputRef = useRef<HTMLInputElement>(null)
 
@@ -228,38 +288,55 @@ export default function OrganiserProjectsPage() {
     const reader = new FileReader()
     reader.onload = (evt) => {
       const text = evt.target?.result as string
-      const lines = text.split('\n').filter(Boolean)
-      const header = lines[0].split(',').map((h) => h.trim().toLowerCase())
-
-      const nameIdx = header.indexOf('project_name')
-      const countryIdx = header.indexOf('country')
-      const pdfIdx = header.indexOf('pdf_url')
-      const videoIdx = header.indexOf('video_url')
-
-      if (nameIdx === -1 || countryIdx === -1) {
-        toast.error('CSV must have "project_name" and "country" columns.')
-        return
-      }
-
-      const imported = lines.slice(1).map((line) => {
-        const cols = line.split(',').map((c) => c.trim())
-        const pdfCell = pdfIdx !== -1 ? cols[pdfIdx] : ''
-        return {
-          id: `proj-csv-${Date.now()}-${Math.random()}`,
-          competition_id: 'comp-2026',
-          name: cols[nameIdx],
-          country: cols[countryIdx] as Country,
-          pdf_url: pdfCell ? pdfCell : null,
-          video_url: videoIdx !== -1 ? (cols[videoIdx] || null) : null,
-          metadata: null,
-          created_at: new Date().toISOString(),
+      const matrix = parseCsvText(text)
+      const { imported, skipped } = importProjectsFromMatrix(matrix, addProject)
+      if (imported === 0) {
+        toast.error('No valid rows imported. Check column names and ASEAN country names.')
+      } else {
+        toast.success(`${imported} project(s) imported from CSV.`)
+        if (skipped > 0) {
+          toast.message(`${skipped} row(s) skipped (empty name or invalid country).`)
         }
-      }).filter((p) => p.name)
-
-      imported.forEach((p) => addProject(p))
-      toast.success(`${imported.length} project(s) imported from CSV.`)
+      }
     }
     reader.readAsText(file)
+    e.target.value = ''
+  }
+
+  const handleExcelImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = async (evt) => {
+      try {
+        const buf = evt.target?.result as ArrayBuffer
+        const XLSX = await import('xlsx')
+        const wb = XLSX.read(buf, { type: 'array' })
+        const sheetName = wb.SheetNames[0]
+        if (!sheetName) {
+          toast.error('The workbook has no sheets.')
+          return
+        }
+        const ws = wb.Sheets[sheetName]
+        const raw = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, defval: '' })
+        const matrix: string[][] = raw.map((row) =>
+          (Array.isArray(row) ? row : []).map((cell) => String(cell ?? '').trim())
+        )
+        const { imported, skipped } = importProjectsFromMatrix(matrix, addProject)
+        if (imported === 0) {
+          toast.error('No valid rows imported. Use row 1 for headers: project_name, country, pdf_url, video_url.')
+        } else {
+          toast.success(`${imported} project(s) imported from Excel.`)
+          if (skipped > 0) {
+            toast.message(`${skipped} row(s) skipped (empty name or invalid country).`)
+          }
+        }
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Could not read Excel file.')
+      }
+    }
+    reader.readAsArrayBuffer(file)
     e.target.value = ''
   }
 
@@ -273,7 +350,7 @@ export default function OrganiserProjectsPage() {
             {projects.length} team{projects.length !== 1 ? 's' : ''} in this competition. Add one with the form (upload a PDF from your computer) or import a spreadsheet.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -282,7 +359,23 @@ export default function OrganiserProjectsPage() {
           >
             <Upload size={13} /> Import CSV
           </Button>
-          <input ref={fileInputRef} type="file" accept=".csv" className="hidden" onChange={handleCSVImport} />
+          <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleCSVImport} />
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => xlsxInputRef.current?.click()}
+            className="gap-1.5 text-xs border-gray-200"
+          >
+            <Upload size={13} /> Import Excel
+          </Button>
+          <input
+            ref={xlsxInputRef}
+            type="file"
+            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            className="hidden"
+            onChange={handleExcelImport}
+          />
 
           <Button
             variant="outline"
@@ -642,15 +735,51 @@ export default function OrganiserProjectsPage() {
         </div>
       </div>
 
-      {/* CSV template */}
-      <div className="bg-[#E1F5EE] rounded-lg p-4 text-sm text-[#0F6E56] space-y-1">
+      {/* Import help + sample files */}
+      <div className="bg-[#E1F5EE] rounded-lg p-4 text-sm text-[#0F6E56] space-y-2">
         <p>
-          <strong>Using a spreadsheet instead?</strong> Download a sample row from Export CSV, or use columns:{' '}
-          <code className="bg-white px-1.5 py-0.5 rounded text-xs font-mono border border-[#B8DDD4] shadow-sm">project_name, country, pdf_url, video_url</code>.
+          <strong>Bulk import:</strong> use columns{' '}
+          <code className="bg-white px-1.5 py-0.5 rounded text-xs font-mono border border-[#B8DDD4] shadow-sm">
+            project_name, country, pdf_url, video_url
+          </code>
+          . Country must match the ASEAN list (e.g. Singapore). Row 1 in Excel should be the header row.
         </p>
         <p className="text-xs text-[#0B5C4A]">
-          For <code className="bg-white px-1 rounded border border-[#B8DDD4]">pdf_url</code>, paste a link to where the PDF is hosted (e.g. Google Drive). The form above is best when you have the file on your computer.
+          For <code className="bg-white px-1 rounded border border-[#B8DDD4]">pdf_url</code>, use a public link or the bundled sample path{' '}
+          <code className="bg-white px-1 rounded border border-[#B8DDD4]">/samples/sample-submission.pdf</code> so judges can open it on the same site.
         </p>
+        <div className="flex flex-wrap gap-2 pt-1">
+          <a
+            href="/samples/organiser-projects-import.csv"
+            download
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'sm' }),
+              'h-8 border-[#B8DDD4] bg-white text-xs no-underline'
+            )}
+          >
+            <Download size={12} className="mr-1.5" /> Sample CSV
+          </a>
+          <a
+            href="/samples/organiser-projects-import.xlsx"
+            download
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'sm' }),
+              'h-8 border-[#B8DDD4] bg-white text-xs no-underline'
+            )}
+          >
+            <Download size={12} className="mr-1.5" /> Sample Excel
+          </a>
+          <a
+            href="/samples/sample-submission.pdf"
+            download
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'sm' }),
+              'h-8 border-[#B8DDD4] bg-white text-xs no-underline'
+            )}
+          >
+            <FileText size={12} className="mr-1.5" /> Sample PDF
+          </a>
+        </div>
       </div>
 
       {/* Search */}

@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -26,6 +26,7 @@ import {
   Keyboard,
   Flag,
   FlagOff,
+  BookOpen,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -37,6 +38,8 @@ import { computeWeightedScore, JUDGING_CRITERIA, TOTAL_MAX_SCORE } from '@/lib/t
 import { useJudgeStore } from '@/store/judgeStore'
 import { useSessionStore } from '@/store/sessionStore'
 import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
+import { PdfViewerDialog } from '@/components/judge/PdfViewerDialog'
+import { cn } from '@/lib/utils'
 
 const SCORE_LABELS: Record<number, string> = {
   1: 'Very Poor', 2: 'Poor', 3: 'Below Average', 4: 'Adequate',
@@ -71,6 +74,8 @@ export default function ScoringPage() {
   const [showKeyboardHint, setShowKeyboardHint] = useState(false)
   const [activeCriterionIdx, setActiveCriterionIdx] = useState(0)
   const [conflictOpen, setConflictOpen] = useState(false)
+  const [pdfOpen, setPdfOpen] = useState(false)
+  const [showPdfInline, setShowPdfInline] = useState(false)
   const criterionRefs = useRef<(HTMLDivElement | null)[]>([])
 
   // Hydrate once with demo data if empty
@@ -172,6 +177,12 @@ export default function ScoringPage() {
 
   return (
     <div className="max-w-6xl mx-auto">
+      <PdfViewerDialog
+        open={pdfOpen}
+        onOpenChange={setPdfOpen}
+        pdfUrl={project.pdf_url}
+        projectName={project.name}
+      />
       {/* Breadcrumb + nav */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 text-xs text-gray-400">
@@ -251,22 +262,64 @@ export default function ScoringPage() {
               </div>
             </div>
 
-            {/* Project links */}
-            <div className="flex gap-3 mt-3">
-              {project.pdf_url && (
-                <a href={project.pdf_url} target="_blank" rel="noreferrer"
-                  className="flex items-center gap-1.5 text-xs text-[#1D9E8B] hover:underline bg-[#E1F5EE] px-2.5 py-1.5 rounded-md">
-                  <FileText size={12} /> View PDF Proposal
-                </a>
-              )}
-              {project.video_url && (
-                <a href={project.video_url} target="_blank" rel="noreferrer"
-                  className="flex items-center gap-1.5 text-xs text-[#1D9E8B] hover:underline bg-[#E1F5EE] px-2.5 py-1.5 rounded-md">
-                  <Video size={12} /> Watch 3-Min Pitch
-                </a>
-              )}
-              {!project.pdf_url && !project.video_url && (
-                <p className="text-xs text-gray-400 italic">No attachments uploaded for this project</p>
+            {/* Project materials */}
+            <div className="mt-3 space-y-2">
+              <div className="flex flex-wrap gap-2">
+                {project.pdf_url ? (
+                  <>
+                    <a
+                      href={project.pdf_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={cn(
+                        buttonVariants({ variant: 'outline', size: 'sm' }),
+                        'h-8 gap-1.5 border-[#B8DDD4] bg-[#E1F5EE] text-xs text-[#0F6E56] no-underline'
+                      )}
+                    >
+                      <FileText size={14} /> Open PDF (new tab)
+                    </a>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5 text-xs border-gray-200"
+                      onClick={() => setPdfOpen(true)}
+                    >
+                      <BookOpen size={14} /> Read PDF (window)
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 gap-1.5 text-xs border-gray-200"
+                      onClick={() => setShowPdfInline((v) => !v)}
+                    >
+                      {showPdfInline ? 'Hide inline PDF' : 'Show inline PDF'}
+                    </Button>
+                  </>
+                ) : (
+                  <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-md px-2.5 py-1.5">
+                    No submission PDF for this team yet. Ask the organiser to upload a PDF on the Projects page.
+                  </p>
+                )}
+                {project.video_url && (
+                  <a
+                    href={project.video_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={cn(
+                      buttonVariants({ variant: 'outline', size: 'sm' }),
+                      'h-8 gap-1.5 border-[#B8DDD4] bg-[#E1F5EE] text-xs text-[#0F6E56] no-underline'
+                    )}
+                  >
+                    <Video size={14} /> Watch pitch
+                  </a>
+                )}
+              </div>
+              {project.pdf_url && showPdfInline && (
+                <div className="rounded-lg border border-gray-200 overflow-hidden bg-gray-50 h-[min(50vh,28rem)]">
+                  <iframe title="Proposal PDF" src={project.pdf_url} className="w-full h-full min-h-[16rem] border-0" />
+                </div>
               )}
             </div>
           </div>

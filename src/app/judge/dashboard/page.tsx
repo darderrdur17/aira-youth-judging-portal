@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -20,11 +20,14 @@ import {
   CheckCheck,
   Flag,
   AlertTriangle,
+  BookOpen,
 } from 'lucide-react'
 import { computeWeightedScore, JUDGING_CRITERIA, TOTAL_MAX_SCORE } from '@/lib/types'
 import { useJudgeStore } from '@/store/judgeStore'
 import { useSessionStore } from '@/store/sessionStore'
 import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
+import { PdfViewerDialog } from '@/components/judge/PdfViewerDialog'
+import { cn } from '@/lib/utils'
 
 type SortMode = 'assigned' | 'score'
 type FilterTab = 'all' | 'pending' | 'judged' | 'flagged'
@@ -39,6 +42,9 @@ export default function JudgeDashboardPage() {
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<FilterTab>('all')
   const [sort, setSort] = useState<SortMode>('assigned')
+  const [pdfOpen, setPdfOpen] = useState(false)
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [pdfTitle, setPdfTitle] = useState('')
 
   const judgeId = session.demo.judgeId ?? 'judge-001'
   const myAssignments = assignments.filter((a) => a.judge_id === judgeId)
@@ -92,6 +98,12 @@ export default function JudgeDashboardPage() {
 
   return (
     <div className="space-y-5">
+      <PdfViewerDialog
+        open={pdfOpen}
+        onOpenChange={setPdfOpen}
+        pdfUrl={pdfUrl}
+        projectName={pdfTitle}
+      />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -272,23 +284,57 @@ export default function JudgeDashboardPage() {
                   {row.scoredCount}/{JUDGING_CRITERIA.length} criteria scored
                 </p>
 
-                {/* Links */}
-                {(row.project.pdf_url || row.project.video_url) && (
-                  <div className="flex items-center gap-2 mb-3">
-                    {row.project.pdf_url && (
-                      <a href={row.project.pdf_url} target="_blank" rel="noreferrer"
-                        className="text-[10px] text-gray-400 hover:text-[#1D9E8B] flex items-center gap-1">
-                        <FileText size={11} /> PDF
-                      </a>
+                {/* Materials */}
+                <div className="mb-3 space-y-1.5">
+                  <p className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Submission</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {row.project.pdf_url ? (
+                      <>
+                        <a
+                          href={row.project.pdf_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={cn(
+                            buttonVariants({ variant: 'outline', size: 'sm' }),
+                            'h-7 px-2 text-[10px] border-gray-200 gap-1 no-underline'
+                          )}
+                        >
+                          <FileText size={11} /> Open PDF
+                        </a>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-[10px] border-gray-200 gap-1 text-[#1A2B3C]"
+                          onClick={() => {
+                            setPdfUrl(row.project.pdf_url)
+                            setPdfTitle(row.project.name)
+                            setPdfOpen(true)
+                          }}
+                        >
+                          <BookOpen size={11} /> Read here
+                        </Button>
+                      </>
+                    ) : (
+                      <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 rounded px-2 py-1">
+                        No PDF on file — ask the organiser to upload one.
+                      </span>
                     )}
                     {row.project.video_url && (
-                      <a href={row.project.video_url} target="_blank" rel="noreferrer"
-                        className="text-[10px] text-gray-400 hover:text-[#1D9E8B] flex items-center gap-1">
+                      <a
+                        href={row.project.video_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={cn(
+                          buttonVariants({ variant: 'outline', size: 'sm' }),
+                          'h-7 px-2 text-[10px] border-gray-200 gap-1 no-underline'
+                        )}
+                      >
                         <Video size={11} /> Video
                       </a>
                     )}
                   </div>
-                )}
+                </div>
 
                 <Link href={`/judge/score/${row.id}`}>
                   <Button

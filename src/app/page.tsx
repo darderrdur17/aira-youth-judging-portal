@@ -1,230 +1,97 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Users, BarChart3, ShieldCheck, Zap, Globe, Calendar } from 'lucide-react'
+import { Users, BarChart3, Heart } from 'lucide-react'
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Nav */}
-      <nav className="border-b border-gray-200 bg-white sticky top-0 z-50 shadow-[0_1px_0_rgba(26,43,60,0.06)]">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#1D9E8B] flex items-center justify-center">
+    <div className="min-h-screen bg-[#F7F8FA] flex flex-col">
+      <header className="border-b border-gray-200 bg-white shadow-[0_1px_0_rgba(26,43,60,0.06)]">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-[#1D9E8B] flex items-center justify-center shrink-0">
               <span className="text-white text-xs font-bold">AJ</span>
             </div>
-            <span className="font-semibold text-[#1A2B3C] text-sm">AISG Judging Portal</span>
+            <span className="font-semibold text-[#1A2B3C] text-sm truncate">AISG Judging Portal</span>
           </div>
-          <div className="flex flex-col items-end gap-1.5 sm:flex-row sm:items-center sm:gap-2">
-            <div className="flex gap-2">
-              <Link href="/auth/login?role=judge">
-                <Button variant="outline" size="sm" className="border-[#1D9E8B] text-[#1D9E8B] hover:bg-[#E1F5EE]">
-                  Judge Login
-                </Button>
-              </Link>
-              <Link href="/auth/login?role=organiser">
-                <Button size="sm" className="bg-[#1D9E8B] hover:bg-[#0F6E56] text-white">
-                  Organiser Login
-                </Button>
-              </Link>
-            </div>
-            <div className="hidden sm:block text-gray-300 text-xs">|</div>
-            <div className="flex gap-2 text-xs">
-              <Link href="/auth/sign-up?role=judge" className="text-[#1D9E8B] hover:underline font-medium">
-                Judge sign up
-              </Link>
-              <span className="text-gray-300">·</span>
-              <Link href="/auth/sign-up?role=organiser" className="text-[#1D9E8B] hover:underline font-medium">
-                Organiser sign up
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#1A2B3C] via-[#1D3A4A] to-[#1A2B3C] py-20 px-4">
-        {/* Decorative tiles */}
-               <div className="absolute inset-0 opacity-[0.07]">
-          {Array.from({ length: 120 }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-12 h-12 rounded-sm"
-              style={{
-                left: `${(i % 12) * 8.5}%`,
-                top: `${Math.floor(i / 12) * 18}%`,
-                backgroundColor: ['#1D9E8B', '#E8735A', '#F5A623', '#3A7BD5', '#7C5CBF'][i % 5],
-                opacity: 0.35 + (i % 8) * 0.08,
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="relative max-w-4xl mx-auto text-center">
-          <Badge className="bg-[#145A52] text-[#D2F7EF] border border-[#2A9D8C] mb-4 text-xs font-medium shadow-sm">
-            AI Ready ASEAN Youth Challenge 2026
-          </Badge>
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 leading-tight">
-            The Official
-            <br />
-            <span className="text-[#1D9E8B]">Judging Portal</span>
-          </h1>
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
-            A purpose-built platform for structured, auditable, and real-time judging of AI
-            solutions addressing challenges across the ASEAN region.
-          </p>
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Link href="/auth/login?role=judge">
-              <Button size="lg" className="bg-[#1D9E8B] hover:bg-[#0F6E56] text-white gap-2">
-                <Users size={18} />
-                Judge Portal
-              </Button>
+          <div className="flex flex-wrap items-center justify-end gap-1.5 text-[11px] sm:text-xs">
+            <Link href="/auth/login?role=judge" className="text-[#1D9E8B] font-medium hover:underline px-1">
+              Judge login
             </Link>
-            <Link href="/auth/login?role=organiser">
-              <Button size="lg" variant="outline" className="border-white text-white bg-[#243548] hover:bg-[#2E4560] gap-2 shadow-md">
-                <BarChart3 size={18} />
-                Organiser Portal
-              </Button>
+            <span className="text-gray-300 hidden sm:inline">·</span>
+            <Link href="/auth/login?role=organiser" className="text-[#1D9E8B] font-medium hover:underline px-1">
+              Organiser login
             </Link>
-            <Link href="/vote">
-              <Button size="lg" variant="outline" className="border-[#F9A8D4] text-[#FCE7F3] bg-[#4A2840] hover:bg-[#5C3350] gap-2 shadow-md">
-                <span>❤️</span>
-                People&#39;s Choice Vote
-              </Button>
+            <span className="text-gray-300 hidden sm:inline">·</span>
+            <Link href="/auth/sign-up?role=judge" className="text-gray-500 hover:text-[#1D9E8B] px-1">
+              Sign up
             </Link>
           </div>
-          <div className="mt-6 flex flex-wrap gap-4 justify-center text-sm text-gray-400">
-            <span className="flex items-center gap-1.5">
-              <Calendar size={14} />
-              Judging Deadline: 15 April 2026
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Globe size={14} />
-              10 ASEAN Countries
-            </span>
-          </div>
         </div>
-      </section>
+      </header>
 
-      {/* Features */}
-      <section className="py-16 px-4 bg-[#F7F8FA]">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold text-[#1A2B3C] mb-2">Built for competition-grade judging</h2>
-            <p className="text-gray-500">Everything organisers and judges need in one place.</p>
+      <main className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-lg space-y-6 text-center">
+          <div>
+            <h1 className="text-2xl font-bold text-[#1A2B3C]">Choose a portal</h1>
+            <p className="text-sm text-gray-500 mt-1.5">
+              Judge scoring, organiser administration, or public voting.
+            </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              {
-                icon: <ShieldCheck className="text-[#1D9E8B]" size={22} />,
-                title: 'Magic Link Authentication',
-                desc: 'Judges log in via a secure email link — no passwords, no friction.',
-              },
-              {
-                icon: <BarChart3 className="text-[#1D9E8B]" size={22} />,
-                title: '8-Criterion Scoring',
-                desc: 'Weighted scoring across Problem Definition, AI Application, Innovation, and more — auto-computed.',
-              },
-              {
-                icon: <Zap className="text-[#1D9E8B]" size={22} />,
-                title: 'Real-Time Progress',
-                desc: 'Organisers see live completion rates per judge and send targeted reminders.',
-              },
-              {
-                icon: <Users className="text-[#1D9E8B]" size={22} />,
-                title: 'Multi-Judge Averaging',
-                desc: 'Final rankings use weighted averages across all judges per project.',
-              },
-              {
-                icon: <Globe className="text-[#1D9E8B]" size={22} />,
-                title: 'CSV & PDF Export',
-                desc: 'Download ranked results with per-criterion scores and team feedback summaries.',
-              },
-              {
-                icon: <ShieldCheck className="text-[#1D9E8B]" size={22} />,
-                title: 'Full Audit Trail',
-                desc: 'Every score change is logged with old/new values for transparent dispute resolution.',
-              },
-            ].map((f) => (
-              <div key={f.title} className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-10 h-10 rounded-lg bg-[#E1F5EE] flex items-center justify-center mb-3">
-                  {f.icon}
-                </div>
-                <h3 className="font-semibold text-[#1A2B3C] mb-1.5 text-sm">{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Judging criteria overview */}
-      <section className="py-16 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold text-[#1A2B3C] mb-2">Judging Criteria</h2>
-            <p className="text-gray-500">8 weighted criteria totalling 85 points</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              { name: 'Problem Definition', weight: 10, desc: 'Issue clarity, target audience, scope' },
-              { name: 'Relevance & Impact', weight: 10, desc: 'Benefits for the target audience' },
-              { name: 'AI Application', weight: 15, desc: 'Sound, responsible use of AI', highlight: true },
-              { name: 'Viability', weight: 10, desc: 'Technical & operational feasibility' },
-              { name: 'Innovation', weight: 10, desc: 'Creativity & originality' },
-              { name: 'Sustainability', weight: 10, desc: 'Long-term impact & operations' },
-              { name: 'Practicality', weight: 10, desc: 'Outreach plan realism' },
-              { name: 'Effectiveness', weight: 10, desc: 'Engaging 1,000+ community members' },
-            ].map((c) => (
-              <div
-                key={c.name}
-                className={`flex items-center gap-3 p-3.5 rounded-lg border ${
-                  c.highlight
-                    ? 'border-[#1D9E8B] bg-[#E1F5EE]'
-                    : 'border-gray-100 bg-gray-50'
-                }`}
+          <div className="grid gap-3">
+            <Link href="/auth/login?role=judge" className="block">
+              <Button
+                size="lg"
+                className="w-full h-auto py-4 gap-3 bg-[#1D9E8B] hover:bg-[#0F6E56] text-white justify-center shadow-sm"
               >
-                <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-sm ${
-                    c.highlight
-                      ? 'bg-[#1D9E8B] text-white'
-                      : 'bg-white text-[#1D9E8B] border border-gray-200'
-                  }`}
-                >
-                  {c.weight}%
-                </div>
-                <div>
-                  <p className={`font-semibold text-sm ${c.highlight ? 'text-[#0F6E56]' : 'text-[#1A2B3C]'}`}>
-                    {c.name}
-                  </p>
-                  <p className="text-xs text-gray-500">{c.desc}</p>
-                </div>
-              </div>
-            ))}
+                <Users size={22} className="shrink-0" />
+                <span className="text-left">
+                  <span className="block font-semibold">Judge portal</span>
+                  <span className="block text-xs font-normal text-[#D2F7EF] opacity-95">
+                    Log in to score assigned projects
+                  </span>
+                </span>
+              </Button>
+            </Link>
+
+            <Link href="/auth/login?role=organiser" className="block">
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full h-auto py-4 gap-3 border-gray-200 bg-white text-[#1A2B3C] hover:bg-gray-50 justify-center shadow-sm"
+              >
+                <BarChart3 size={22} className="shrink-0 text-[#1D9E8B]" />
+                <span className="text-left">
+                  <span className="block font-semibold">Organiser portal</span>
+                  <span className="block text-xs font-normal text-gray-500">
+                    Projects, judges, assignments, results
+                  </span>
+                </span>
+              </Button>
+            </Link>
+
+            <Link href="/vote" className="block">
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full h-auto py-4 gap-3 border-pink-200 bg-white text-pink-700 hover:bg-pink-50 justify-center shadow-sm"
+              >
+                <Heart size={22} className="shrink-0" />
+                <span className="text-left">
+                  <span className="block font-semibold">People&apos;s choice vote</span>
+                  <span className="block text-xs font-normal text-pink-600/90">
+                    Public voting (no login)
+                  </span>
+                </span>
+              </Button>
+            </Link>
           </div>
-          <p className="text-center text-xs text-gray-400 mt-4">
-            Public Engagement (20%) is determined by community votes — not judge-scored
+
+          <p className="text-[11px] text-gray-400">
+            Try the UI without email: use <strong className="text-gray-600">Demo login</strong> on the login page.
           </p>
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-gray-100 py-8 px-4 bg-[#1A2B3C]">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-[#1D9E8B] flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold">AJ</span>
-            </div>
-            <span className="text-gray-400 text-sm">AI Ready ASEAN Youth Challenge 2026</span>
-          </div>
-          <div className="flex gap-4 text-xs text-gray-500">
-            <span>IMDA · ATX Summit · AI Singapore · ASEAN Foundation · Google.org</span>
-          </div>
-          <a href="mailto:info@airayouthchallenge.ai" className="text-[#1D9E8B] text-xs hover:underline">
-            info@airayouthchallenge.ai
-          </a>
-        </div>
-      </footer>
+      </main>
     </div>
   )
 }
