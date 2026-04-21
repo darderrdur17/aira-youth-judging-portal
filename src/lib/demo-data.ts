@@ -1,8 +1,8 @@
 import type { Assignment, Competition, Criterion, Feedback, Judge, Project, Score } from './types'
 import { JUDGING_CRITERIA } from './types'
 
-/** Bundled sample PDF for demo teams (also used in `/public/samples/organiser-projects-import.*`). */
-export const SAMPLE_TEAM_SUBMISSION_PDF = '/samples/sample-submission.pdf'
+/** Example PDF path for import templates (AgriSense AI demo file). */
+export const SAMPLE_TEAM_SUBMISSION_PDF = '/samples/projects/proj-001.pdf'
 
 export const DEMO_COMPETITION: Competition = {
   id: 'comp-2026',
@@ -26,7 +26,7 @@ export const DEMO_PROJECTS: Project[] = [
     competition_id: 'comp-2026',
     name: 'AgriSense AI',
     country: 'Philippines',
-    pdf_url: SAMPLE_TEAM_SUBMISSION_PDF,
+    pdf_url: '/samples/projects/proj-001.pdf',
     video_url: 'https://www.youtube.com/watch?v=example1',
     metadata: { team: 'Team Alpha', members: 3 },
     created_at: '2026-03-20T10:00:00Z',
@@ -36,7 +36,7 @@ export const DEMO_PROJECTS: Project[] = [
     competition_id: 'comp-2026',
     name: 'MedBot SEA',
     country: 'Indonesia',
-    pdf_url: SAMPLE_TEAM_SUBMISSION_PDF,
+    pdf_url: '/samples/projects/proj-002.pdf',
     video_url: 'https://www.youtube.com/watch?v=example2',
     metadata: { team: 'HealthForward', members: 4 },
     created_at: '2026-03-20T11:00:00Z',
@@ -46,7 +46,7 @@ export const DEMO_PROJECTS: Project[] = [
     competition_id: 'comp-2026',
     name: 'EduPath Lite',
     country: 'Singapore',
-    pdf_url: SAMPLE_TEAM_SUBMISSION_PDF,
+    pdf_url: '/samples/projects/proj-003.pdf',
     video_url: null,
     metadata: { team: 'LearnSG', members: 2 },
     created_at: '2026-03-21T09:00:00Z',
@@ -56,7 +56,7 @@ export const DEMO_PROJECTS: Project[] = [
     competition_id: 'comp-2026',
     name: 'FloodAlert MY',
     country: 'Malaysia',
-    pdf_url: SAMPLE_TEAM_SUBMISSION_PDF,
+    pdf_url: '/samples/projects/proj-004.pdf',
     video_url: 'https://www.youtube.com/watch?v=example4',
     metadata: { team: 'SafeNet', members: 3 },
     created_at: '2026-03-21T14:00:00Z',
@@ -66,7 +66,7 @@ export const DEMO_PROJECTS: Project[] = [
     competition_id: 'comp-2026',
     name: 'LinguaBridge TH',
     country: 'Thailand',
-    pdf_url: SAMPLE_TEAM_SUBMISSION_PDF,
+    pdf_url: '/samples/projects/proj-005.pdf',
     video_url: null,
     metadata: { team: 'TranslateTech', members: 2 },
     created_at: '2026-03-22T08:00:00Z',
@@ -76,7 +76,7 @@ export const DEMO_PROJECTS: Project[] = [
     competition_id: 'comp-2026',
     name: 'CropDoc VN',
     country: 'Vietnam',
-    pdf_url: SAMPLE_TEAM_SUBMISSION_PDF,
+    pdf_url: '/samples/projects/proj-006.pdf',
     video_url: 'https://www.youtube.com/watch?v=example6',
     metadata: { team: 'AgriTech VN', members: 4 },
     created_at: '2026-03-22T10:00:00Z',
@@ -86,7 +86,7 @@ export const DEMO_PROJECTS: Project[] = [
     competition_id: 'comp-2026',
     name: 'SafeSchool KH',
     country: 'Cambodia',
-    pdf_url: SAMPLE_TEAM_SUBMISSION_PDF,
+    pdf_url: '/samples/projects/proj-007.pdf',
     video_url: null,
     metadata: { team: 'EduGuard', members: 3 },
     created_at: '2026-03-23T09:00:00Z',
@@ -96,7 +96,7 @@ export const DEMO_PROJECTS: Project[] = [
     competition_id: 'comp-2026',
     name: 'WasteWise MM',
     country: 'Myanmar',
-    pdf_url: SAMPLE_TEAM_SUBMISSION_PDF,
+    pdf_url: '/samples/projects/proj-008.pdf',
     video_url: 'https://www.youtube.com/watch?v=example8',
     metadata: { team: 'GreenFuture', members: 2 },
     created_at: '2026-03-23T11:00:00Z',

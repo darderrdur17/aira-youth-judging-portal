@@ -7,19 +7,17 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const samplesDir = join(__dirname, '../public/samples')
 mkdirSync(samplesDir, { recursive: true })
 
-const pdf = '/samples/sample-submission.pdf'
-
 const rows = [
   {
     project_name: 'Sample Import — Team Alpha',
     country: 'Singapore',
-    pdf_url: pdf,
+    pdf_url: '/samples/projects/proj-001.pdf',
     video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
   },
   {
     project_name: 'Sample Import — Team Beta',
     country: 'Malaysia',
-    pdf_url: pdf,
+    pdf_url: '/samples/projects/proj-002.pdf',
     video_url: '',
   },
 ]

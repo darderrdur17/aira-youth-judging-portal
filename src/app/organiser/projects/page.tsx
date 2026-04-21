@@ -745,8 +745,8 @@ export default function OrganiserProjectsPage() {
           . Country must match the ASEAN list (e.g. Singapore). Row 1 in Excel should be the header row.
         </p>
         <p className="text-xs text-[#0B5C4A]">
-          For <code className="bg-white px-1 rounded border border-[#B8DDD4]">pdf_url</code>, use a public link or the bundled sample path{' '}
-          <code className="bg-white px-1 rounded border border-[#B8DDD4]">/samples/sample-submission.pdf</code> so judges can open it on the same site.
+          For <code className="bg-white px-1 rounded border border-[#B8DDD4]">pdf_url</code>, use a public link or a path under{' '}
+          <code className="bg-white px-1 rounded border border-[#B8DDD4]">/samples/projects/</code> (see generated demo PDFs) so judges can open files on the same site.
         </p>
         <div className="flex flex-wrap gap-2 pt-1">
           <a
@@ -770,14 +770,14 @@ export default function OrganiserProjectsPage() {
             <Download size={12} className="mr-1.5" /> Sample Excel
           </a>
           <a
-            href="/samples/sample-submission.pdf"
+            href="/samples/projects/proj-001.pdf"
             download
             className={cn(
               buttonVariants({ variant: 'outline', size: 'sm' }),
               'h-8 border-[#B8DDD4] bg-white text-xs no-underline'
             )}
           >
-            <FileText size={12} className="mr-1.5" /> Sample PDF
+            <FileText size={12} className="mr-1.5" /> Sample PDF (proj-001)
           </a>
         </div>
       </div>
