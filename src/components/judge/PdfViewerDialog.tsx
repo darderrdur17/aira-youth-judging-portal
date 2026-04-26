@@ -10,6 +10,7 @@ import {
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { ExternalLink, FileText } from 'lucide-react'
+import { usePdfObjectUrl } from '@/hooks/usePdfObjectUrl'
 
 type PdfViewerDialogProps = {
   open: boolean
@@ -19,7 +20,9 @@ type PdfViewerDialogProps = {
 }
 
 export function PdfViewerDialog({ open, onOpenChange, pdfUrl, projectName }: PdfViewerDialogProps) {
-  if (!pdfUrl) return null
+  const displayUrl = usePdfObjectUrl(pdfUrl)
+
+  if (!pdfUrl?.trim()) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -31,28 +34,39 @@ export function PdfViewerDialog({ open, onOpenChange, pdfUrl, projectName }: Pdf
             {projectName ? <span className="font-normal text-gray-500">· {projectName}</span> : null}
           </DialogTitle>
           <DialogDescription className="text-xs text-gray-500">
-            Read the PDF below or open it in a new tab if your browser blocks the preview.
+            Uploaded PDFs open via a temporary preview URL so your browser can display them reliably.
           </DialogDescription>
           <div className="pt-2">
-            <a
-              href={pdfUrl}
-              target="_blank"
-              rel="noreferrer"
-              className={cn(
-                buttonVariants({ variant: 'outline', size: 'sm' }),
-                'inline-flex h-8 gap-1.5 border-gray-200 text-xs no-underline'
-              )}
-            >
-              <ExternalLink size={14} />
-              Open PDF in new tab
-            </a>
+            {displayUrl ? (
+              <a
+                href={displayUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  buttonVariants({ variant: 'outline', size: 'sm' }),
+                  'inline-flex h-8 gap-1.5 border-gray-200 text-xs no-underline'
+                )}
+              >
+                <ExternalLink size={14} />
+                Open PDF in new tab
+              </a>
+            ) : (
+              <span className="text-xs text-gray-400">Preparing PDF…</span>
+            )}
           </div>
         </DialogHeader>
-        <iframe
-          title="Project PDF"
-          src={pdfUrl}
-          className="min-h-[60vh] w-full flex-1 border-0 bg-gray-100"
-        />
+        {displayUrl ? (
+          <iframe
+            key={displayUrl}
+            title="Project PDF"
+            src={displayUrl}
+            className="min-h-[60vh] w-full flex-1 border-0 bg-gray-100"
+          />
+        ) : (
+          <div className="flex min-h-[50vh] items-center justify-center text-sm text-gray-500">
+            Loading PDF preview…
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

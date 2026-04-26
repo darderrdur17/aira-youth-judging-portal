@@ -39,6 +39,8 @@ import { useJudgeStore } from '@/store/judgeStore'
 import { useSessionStore } from '@/store/sessionStore'
 import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 import { PdfViewerDialog } from '@/components/judge/PdfViewerDialog'
+import { PdfOpenLink } from '@/components/shared/PdfOpenLink'
+import { PdfPreviewIframe } from '@/components/shared/PdfPreviewIframe'
 import { cn } from '@/lib/utils'
 
 const SCORE_LABELS: Record<number, string> = {
@@ -267,17 +269,15 @@ export default function ScoringPage() {
               <div className="flex flex-wrap gap-2">
                 {project.pdf_url ? (
                   <>
-                    <a
+                    <PdfOpenLink
                       href={project.pdf_url}
-                      target="_blank"
-                      rel="noreferrer"
                       className={cn(
                         buttonVariants({ variant: 'outline', size: 'sm' }),
                         'h-8 gap-1.5 border-[#B8DDD4] bg-[#E1F5EE] text-xs text-[#0F6E56] no-underline'
                       )}
                     >
                       <FileText size={14} /> Open PDF (new tab)
-                    </a>
+                    </PdfOpenLink>
                     <Button
                       type="button"
                       variant="outline"
@@ -318,7 +318,11 @@ export default function ScoringPage() {
               </div>
               {project.pdf_url && showPdfInline && (
                 <div className="rounded-lg border border-gray-200 overflow-hidden bg-gray-50 h-[min(50vh,28rem)]">
-                  <iframe title="Proposal PDF" src={project.pdf_url} className="w-full h-full min-h-[16rem] border-0" />
+                  <PdfPreviewIframe
+                    pdfUrl={project.pdf_url}
+                    title="Proposal PDF"
+                    className="w-full h-full min-h-[16rem] border-0"
+                  />
                 </div>
               )}
             </div>

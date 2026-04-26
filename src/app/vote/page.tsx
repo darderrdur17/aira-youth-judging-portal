@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress'
 import { Heart, Search, ArrowLeft, CheckCircle2, Video, FileText, Trophy, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
+import { PdfOpenLink } from '@/components/shared/PdfOpenLink'
 
 const VOTE_CLOSE = '2026-04-15T04:00:00Z'
 
@@ -244,10 +245,12 @@ export default function PeoplesChoicePage() {
                           </a>
                         )}
                         {project.pdf_url && (
-                          <a href={project.pdf_url} target="_blank" rel="noreferrer"
-                            className="text-[10px] text-gray-400 hover:text-[#1D9E8B] flex items-center gap-0.5">
+                          <PdfOpenLink
+                            href={project.pdf_url}
+                            className="text-[10px] text-gray-400 hover:text-[#1D9E8B] flex items-center gap-0.5 no-underline"
+                          >
                             <FileText size={10} /> PDF
-                          </a>
+                          </PdfOpenLink>
                         )}
                       </div>
                     </div>

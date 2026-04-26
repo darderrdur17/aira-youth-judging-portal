@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Button, buttonVariants } from '@/components/ui/button'
+import { PdfOpenLink } from '@/components/shared/PdfOpenLink'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -290,17 +291,15 @@ export default function JudgeDashboardPage() {
                   <div className="flex flex-wrap gap-1.5">
                     {row.project.pdf_url ? (
                       <>
-                        <a
+                        <PdfOpenLink
                           href={row.project.pdf_url}
-                          target="_blank"
-                          rel="noreferrer"
                           className={cn(
                             buttonVariants({ variant: 'outline', size: 'sm' }),
                             'h-7 px-2 text-[10px] border-gray-200 gap-1 no-underline'
                           )}
                         >
                           <FileText size={11} /> Open PDF
-                        </a>
+                        </PdfOpenLink>
                         <Button
                           type="button"
                           variant="outline"

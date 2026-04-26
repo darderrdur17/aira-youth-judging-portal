@@ -45,6 +45,7 @@ import type { Country, Project } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 import { parseCsvText } from '@/lib/csv'
+import { PdfOpenLink } from '@/components/shared/PdfOpenLink'
 
 const MAX_PDF_BYTES = 20 * 1024 * 1024 // 20 MB — typical cap for browser demo; use cloud storage in production
 
@@ -819,9 +820,12 @@ export default function OrganiserProjectsPage() {
                   <TableCell>
                     <div className="flex gap-2">
                       {project.pdf_url ? (
-                        <a href={project.pdf_url} target="_blank" rel="noreferrer" className="text-[#1D9E8B] hover:underline flex items-center gap-1 text-xs">
+                        <PdfOpenLink
+                          href={project.pdf_url}
+                          className="text-[#1D9E8B] hover:underline flex items-center gap-1 text-xs no-underline"
+                        >
                           <FileText size={11} /> PDF
-                        </a>
+                        </PdfOpenLink>
                       ) : <span className="text-gray-300 text-xs">No PDF</span>}
                       {project.video_url ? (
                         <a href={project.video_url} target="_blank" rel="noreferrer" className="text-[#1D9E8B] hover:underline flex items-center gap-1 text-xs">
