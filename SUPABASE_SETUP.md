@@ -122,6 +122,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 RESEND_API_KEY=re_your_api_key_here
 RESEND_FROM="AISG Judging Portal <no-reply@yourdomain.com>"
 
+# Optional but recommended (fixes “no SMTP options” projects):
+# Allows the app to generate Supabase magic links server-side and send them via Resend.
+# NEVER expose this key to the browser.
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
 # App URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 

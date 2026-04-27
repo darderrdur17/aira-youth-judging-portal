@@ -53,6 +53,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 RESEND_API_KEY=re_your_key
 RESEND_FROM="AISG Judging Portal <no-reply@yourdomain.com>"
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
 ### 2. Deploy to Vercel

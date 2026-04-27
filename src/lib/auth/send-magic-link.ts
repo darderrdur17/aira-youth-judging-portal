@@ -12,17 +12,31 @@ export async function sendMagicLinkToEmail(
   email: string,
   nextPath: string = '/judge/dashboard'
 ): Promise<{ ok: true } | { ok: false; message: string }> {
+  const origin = typeof window !== 'undefined' ? window.location.origin : ''
+  if (!origin) {
+    return { ok: false, message: 'Cannot send email from this context.' }
+  }
+
+  // Prefer server-side delivery via Resend + Supabase Admin link generation when available.
+  try {
+    const res = await fetch('/api/auth/magic-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, nextPath }),
+    })
+    const data = (await res.json()) as { ok?: boolean; error?: string }
+    if (res.ok && data.ok) return { ok: true }
+    // Fall through to client OTP if the endpoint isn't configured.
+  } catch {
+    // ignore
+  }
+
   if (!isSupabaseConfigured()) {
     return {
       ok: false,
       message:
         'Supabase is not configured in this deployment (missing NEXT_PUBLIC_SUPABASE_URL / ANON_KEY). Add them in Vercel to send real magic links.',
     }
-  }
-
-  const origin = typeof window !== 'undefined' ? window.location.origin : ''
-  if (!origin) {
-    return { ok: false, message: 'Cannot send email from this context.' }
   }
 
   const supabase = createClient()
