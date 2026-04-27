@@ -76,13 +76,33 @@ export default function OrganiserJudgesPage() {
       setNewJudge({ name: '', email: '' })
       setAddOpen(false)
 
-      const sent = await sendMagicLinkToEmail(judge.email)
-      if (sent.ok) {
-        toast.success(
-          `Magic link sent to ${judge.email}. If nothing arrives within a few minutes, check spam and Supabase → Authentication → Logs.`
-        )
-      } else {
-        toast.error(`Judge was added to your list, but the email was not sent: ${sent.message}`)
+      // Preferred: create a Supabase judge invitation row, then email a Supabase magic link via Resend.
+      // This avoids the "not invited" block after the user clicks the link.
+      try {
+        const res = await fetch('/api/organiser/invite-judge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: judge.email, name: judge.name, nextPath: '/judge/dashboard' }),
+        })
+        const data = (await res.json()) as { ok?: boolean; error?: string }
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || 'Invite endpoint failed')
+        }
+        toast.success(`Invitation email sent to ${judge.email}.`)
+      } catch (e) {
+        // Fallback: try the client OTP flow (may still fail in projects with no SMTP options).
+        const sent = await sendMagicLinkToEmail(judge.email)
+        if (sent.ok) {
+          toast.success(
+            `Magic link sent to ${judge.email}. If login shows “not invited”, add this judge in Supabase (judges table) or enable the service-role invite endpoint.`
+          )
+        } else {
+          toast.error(
+            `Judge was added to your list, but the email was not sent: ${
+              e instanceof Error ? e.message : sent.message
+            }`
+          )
+        }
       }
     } finally {
       setInviteBusy(false)
