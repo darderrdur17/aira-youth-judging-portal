@@ -21,6 +21,7 @@ import type { Assignment, Judge, Project } from '@/lib/types'
 import { JUDGING_CRITERIA, computeWeightedScore } from '@/lib/types'
 import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 import { toast } from 'sonner'
+import { sendMagicLinkToEmail } from '@/lib/auth/send-magic-link'
 
 function getJudgeProgress(assignments: Assignment[], judges: Judge[]) {
   return judges.map((judge) => {
@@ -91,8 +92,14 @@ export default function OrganiserDashboardPage() {
     try {
       const loginUrl = `${window.location.origin}/auth/login?role=judge`
       let sent = 0
+      const failures: string[] = []
       for (const jp of judgesNeedingReminder) {
         const pendingCount = Math.max(0, jp.total - jp.done)
+        const magic = await sendMagicLinkToEmail(jp.judge.email)
+        if (magic.ok) {
+          sent += 1
+          continue
+        }
         const res = await fetch('/api/email/reminder', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -106,15 +113,23 @@ export default function OrganiserDashboardPage() {
           }),
         })
         const data = (await res.json()) as { ok?: boolean; error?: string }
-        if (!res.ok || !data.ok) {
-          throw new Error(
-            data.error ||
-              'Could not send reminders. Ensure RESEND_API_KEY and RESEND_FROM are set on the server.'
-          )
+        if (res.ok && data.ok) {
+          sent += 1
+        } else {
+          failures.push(jp.judge.email)
         }
-        sent += 1
       }
-      toast.success(`Reminder sent to ${sent} judge(s).`)
+      if (sent > 0) {
+        toast.success(`Email sent to ${sent} judge(s) (magic link and/or backup reminder).`)
+      }
+      if (failures.length > 0) {
+        toast.error(`Could not reach: ${failures.join(', ')}. Check Supabase SMTP and Vercel RESEND_* env.`)
+      }
+      if (sent === 0) {
+        toast.error(
+          'No emails were delivered. Configure Supabase Authentication → SMTP and/or RESEND_API_KEY + RESEND_FROM.'
+        )
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to send reminders.')
     } finally {

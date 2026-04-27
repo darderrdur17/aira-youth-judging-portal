@@ -25,6 +25,7 @@ import { Plus, Search, Mail, UserX, Send, CheckCircle2, Clock, AlertTriangle, Pe
 import { toast } from 'sonner'
 import { DEMO_SCORES } from '@/lib/demo-data'
 import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
+import { sendMagicLinkToEmail } from '@/lib/auth/send-magic-link'
 
 export default function OrganiserJudgesPage() {
   const judges = useOrganiserDemoStore((s) => s.judges)
@@ -39,6 +40,7 @@ export default function OrganiserJudgesPage() {
   const [newJudge, setNewJudge] = useState({ name: '', email: '' })
   const [editJudge, setEditJudge] = useState({ name: '', email: '' })
   const [sending, setSending] = useState<string | null>(null)
+  const [inviteBusy, setInviteBusy] = useState(false)
 
   const getJudgeStats = (judgeId: string) => {
     const assigns = assignments.filter((a) => a.judge_id === judgeId)
@@ -54,7 +56,7 @@ export default function OrganiserJudgesPage() {
     return j.name.toLowerCase().includes(q) || j.email.toLowerCase().includes(q)
   })
 
-  const handleInvite = () => {
+  const handleInvite = async () => {
     if (!newJudge.name || !newJudge.email) {
       toast.error('Name and email are required.')
       return
@@ -63,15 +65,28 @@ export default function OrganiserJudgesPage() {
       id: `judge-${Date.now()}`,
       user_id: `user-${Date.now()}`,
       competition_id: 'comp-2026',
-      name: newJudge.name,
-      email: newJudge.email,
+      name: newJudge.name.trim(),
+      email: newJudge.email.trim().toLowerCase(),
       is_active: true,
       created_at: new Date().toISOString(),
     }
-    addJudge(judge)
-    setNewJudge({ name: '', email: '' })
-    setAddOpen(false)
-    toast.success(`Magic link invitation sent to ${judge.email}.`)
+    setInviteBusy(true)
+    try {
+      addJudge(judge)
+      setNewJudge({ name: '', email: '' })
+      setAddOpen(false)
+
+      const sent = await sendMagicLinkToEmail(judge.email)
+      if (sent.ok) {
+        toast.success(
+          `Magic link sent to ${judge.email}. If nothing arrives within a few minutes, check spam and Supabase → Authentication → Logs.`
+        )
+      } else {
+        toast.error(`Judge was added to your list, but the email was not sent: ${sent.message}`)
+      }
+    } finally {
+      setInviteBusy(false)
+    }
   }
 
   const openEditJudge = (id: string) => {
@@ -100,6 +115,12 @@ export default function OrganiserJudgesPage() {
 
     setSending(judgeId)
     try {
+      const magic = await sendMagicLinkToEmail(judge.email)
+      if (magic.ok) {
+        toast.success(`Magic login link sent to ${judgeName}.`)
+        return
+      }
+
       const res = await fetch('/api/email/reminder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -116,14 +137,14 @@ export default function OrganiserJudgesPage() {
       const data = (await res.json()) as { ok?: boolean; error?: string }
       if (!res.ok || !data.ok) {
         throw new Error(
-          data.error ||
-            'Could not send reminder. Ensure RESEND_API_KEY and RESEND_FROM are set on the server.'
+          [magic.message, data.error].filter(Boolean).join(' ') ||
+            'Could not send magic link or reminder. Check Supabase SMTP and/or RESEND_API_KEY on the server.'
         )
       }
 
-      toast.success(`Reminder sent to ${judgeName}.`)
+      toast.success(`Backup reminder sent to ${judgeName} (includes a link to the judge login page).`)
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Failed to send reminder.')
+      toast.error(e instanceof Error ? e.message : 'Failed to send email.')
     } finally {
       setSending(null)
     }
@@ -160,8 +181,14 @@ export default function OrganiserJudgesPage() {
                   const loginUrl = `${window.location.origin}/auth/login?role=judge`
 
                   let sentCount = 0
+                  const failures: string[] = []
                   for (const j of needingReminder) {
                     const stats = getJudgeStats(j.id)
+                    const magic = await sendMagicLinkToEmail(j.email)
+                    if (magic.ok) {
+                      sentCount += 1
+                      continue
+                    }
                     const res = await fetch('/api/email/reminder', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
@@ -175,16 +202,21 @@ export default function OrganiserJudgesPage() {
                       }),
                     })
                     const data = (await res.json()) as { ok?: boolean; error?: string }
-                    if (!res.ok || !data.ok) {
-                      throw new Error(
-                        data.error ||
-                          'Could not send reminders. Ensure RESEND_API_KEY and RESEND_FROM are set on the server.'
-                      )
+                    if (res.ok && data.ok) {
+                      sentCount += 1
+                    } else {
+                      failures.push(j.email)
                     }
-                    sentCount += 1
                   }
 
-                  toast.success(`Reminder sent to ${sentCount} judge(s).`)
+                  if (sentCount > 0) {
+                    toast.success(`Email sent to ${sentCount} judge(s) (magic link and/or backup reminder).`)
+                  }
+                  if (failures.length > 0) {
+                    toast.error(
+                      `Could not email: ${failures.join(', ')}. Set up Supabase Authentication → SMTP (magic link) and/or Vercel RESEND_API_KEY + RESEND_FROM (backup reminder).`
+                    )
+                  }
                 } catch (e) {
                   toast.error(e instanceof Error ? e.message : 'Failed to send reminders.')
                 } finally {
@@ -206,7 +238,8 @@ export default function OrganiserJudgesPage() {
               <DialogHeader>
                 <DialogTitle className="text-[#1A2B3C]">Invite Judge</DialogTitle>
                 <DialogDescription className="text-gray-600 text-sm">
-                  Add a new judge. They will receive a magic link at this email.
+                  Adds the judge to your list and sends a real Supabase magic link to this address (same as Judge login → Magic link).
+                  Requires Supabase SMTP; check Authentication → Logs if delivery fails.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 pt-2">
@@ -233,9 +266,16 @@ export default function OrganiserJudgesPage() {
                   A magic link will be emailed to this address. The judge can click it to log in directly — no password required.
                 </div>
                 <div className="flex justify-end gap-2 pt-1">
-                  <Button variant="outline" size="sm" onClick={() => setAddOpen(false)}>Cancel</Button>
-                  <Button size="sm" onClick={handleInvite} className="bg-[#1D9E8B] hover:bg-[#0F6E56] text-white gap-1.5">
-                    <Send size={12} /> Send Invitation
+                  <Button variant="outline" size="sm" onClick={() => setAddOpen(false)} disabled={inviteBusy}>
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => void handleInvite()}
+                    disabled={inviteBusy}
+                    className="bg-[#1D9E8B] hover:bg-[#0F6E56] text-white gap-1.5"
+                  >
+                    <Send size={12} /> {inviteBusy ? 'Sending…' : 'Send Invitation'}
                   </Button>
                 </div>
               </div>

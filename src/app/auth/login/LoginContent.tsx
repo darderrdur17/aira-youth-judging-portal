@@ -13,21 +13,7 @@ import { DEMO_JUDGES } from '@/lib/demo-data'
 import { useSessionStore } from '@/store/sessionStore'
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import { sanitizeNextPath } from '@/lib/auth/sanitize-next'
-
-function mapOtpErrorMessage(message: string): string {
-  const m = message.toLowerCase()
-  if (
-    m.includes('confirmation email') ||
-    m.includes('error sending') ||
-    m.includes('email rate limit')
-  ) {
-    return (
-      'Could not send the login email. In the Supabase Dashboard open Authentication → SMTP (add a provider such as Resend) ' +
-      'and confirm Site URL / redirect URLs; then check Authentication → Logs for the exact error.'
-    )
-  }
-  return message
-}
+import { mapOtpErrorMessage } from '@/lib/auth/otp-errors'
 
 const ERROR_MESSAGES: Record<string, string> = {
   auth_failed: 'Could not verify the login link. Request a new magic link and try again.',
