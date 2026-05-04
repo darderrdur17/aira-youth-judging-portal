@@ -162,40 +162,41 @@ export default function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] flex flex-col">
-      <div className="bg-[#1A2B3C] px-4 py-3">
-        <div className="max-w-6xl mx-auto flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm">
+    <div className="min-h-screen bg-[var(--aira-canvas)] lg:grid lg:min-h-screen lg:grid-cols-2">
+      <div className="relative flex flex-col justify-between bg-[#E85A14] px-6 py-8 text-white sm:px-10 sm:py-12 lg:min-h-screen">
+        <div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-white/90 transition-colors hover:text-white"
+          >
             <ArrowLeft size={14} />
-            Back
+            Home
           </Link>
-          <div className="flex-1" />
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-[#1D9E8B] flex items-center justify-center">
-              <span className="text-white text-[10px] font-bold">AJ</span>
-            </div>
-            <span className="text-white text-sm font-semibold">AISG Judging Portal</span>
-          </div>
+          <h2 className="mt-8 text-2xl font-bold leading-tight sm:text-3xl">2026: AIRA Youth Challenge</h2>
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-white/90">
+            Sign in to the judging portal — score submissions, manage projects and judges, or open the public vote.
+          </p>
         </div>
+        <p className="mt-8 text-xs text-white/75 lg:mt-0">AI Ready ASEAN · Youth Challenge</p>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
+      <div className="flex flex-1 items-center justify-center p-4 sm:p-8">
+        <div className="w-full max-w-md animate-fade-in-up">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
-            <div className={`px-6 py-5 border-b border-gray-100 ${isOrganiser ? 'bg-[#1A2B3C]' : 'bg-[#E1F5EE]'}`}>
+            <div className={`border-b border-gray-100 px-6 py-5 ${isOrganiser ? 'bg-[#FFF1E6]' : 'bg-[#E8F7F4]'}`}>
               <Badge
-                className={`mb-2 text-xs font-medium ${
+                className={`mb-2 border-0 text-xs font-semibold ${
                   isOrganiser
-                    ? 'bg-[#2A3F52] text-white border border-[#3D5669]'
-                    : 'bg-white text-[#0F6E56] border border-[#1D9E8B]'
+                    ? 'bg-[#E85A14] text-white'
+                    : 'bg-[#1D9E8B] text-white'
                 }`}
               >
-                {isOrganiser ? 'Organiser Portal' : 'Judge Portal'}
+                {isOrganiser ? 'Organiser portal' : 'Judge portal'}
               </Badge>
-              <h1 className={`text-xl font-bold ${isOrganiser ? 'text-white' : 'text-[#1A2B3C]'}`}>
-                {isOrganiser ? 'Organiser Login' : 'Judge Login'}
+              <h1 className="text-xl font-bold text-[#1A2B3C]">
+                {isOrganiser ? 'Organiser login' : 'Judge login'}
               </h1>
-              <p className={`text-sm mt-1 ${isOrganiser ? 'text-gray-300' : 'text-[#0F6E56]'}`}>
+              <p className="mt-1 text-sm text-gray-600">
                 {isOrganiser
                   ? 'Sign in with a magic link or email and password. New here? Create an account first.'
                   : 'Magic link, password, or demo — your organiser must invite your email for full access.'}

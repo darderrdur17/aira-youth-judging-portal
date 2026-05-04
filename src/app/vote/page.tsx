@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { CountryBadge } from '@/components/shared/CountryBadge'
 import { Progress } from '@/components/ui/progress'
-import { Heart, Search, ArrowLeft, CheckCircle2, Video, FileText, Trophy, Info } from 'lucide-react'
+import { Heart, Search, CheckCircle2, Video, FileText, Trophy, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 import { PdfOpenLink } from '@/components/shared/PdfOpenLink'
@@ -76,70 +75,41 @@ export default function PeoplesChoicePage() {
   const ranked = [...demoProjects].sort((a, b) => (votes[b.id] ?? 0) - (votes[a.id] ?? 0))
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
-      {/* Header */}
-      <div className="bg-[#1A2B3C] text-white">
-        <div className="max-w-5xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-[#1D9E8B] flex items-center justify-center">
-                <span className="text-white text-[10px] font-bold">AJ</span>
-              </div>
-              <div>
-                <p className="font-bold text-sm">People&apos;s Choice Award</p>
-                <p className="text-xs text-gray-400">AI Ready ASEAN Youth Challenge 2026</p>
-              </div>
-            </div>
-            <Link href="/" className="text-gray-400 hover:text-white text-xs flex items-center gap-1">
-              <ArrowLeft size={12} /> Back
-            </Link>
-          </div>
-        </div>
-
-        <div className="max-w-5xl mx-auto px-4 pb-8 pt-2">
-          <div className="flex items-start gap-3">
-            <div>
-              <Badge className="bg-[#145A52] text-[#D2F7EF] border border-[#2A9D8C] text-xs mb-3 font-medium shadow-sm">
-                <Heart size={11} className="mr-1.5" /> Public Voting — 20% of Final Score
-              </Badge>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Vote for Your Favourite Project</h1>
-              <p className="text-gray-300 text-sm max-w-xl leading-relaxed">
-                Community votes make up <strong className="text-white">20%</strong> of the final competition score.
-                You can vote for up to <strong className="text-white">3 projects</strong> from any ASEAN country.
-                Help shape who wins the People&apos;s Choice Award!
-              </p>
-              <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
-                <span className="flex items-center gap-1.5">
-                  <Heart size={12} /> {totalVotes.toLocaleString()} total votes
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 size={12} /> {demoProjects.length} projects competing
-                </span>
-                {!votingClosed && (
-                  <span className="text-amber-400">Voting closes: 15 Apr 2026</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Rules banner */}
-      <div className="bg-[#1D9E8B] text-white py-2.5 px-4">
-        <div className="max-w-5xl mx-auto flex items-center gap-2 text-xs">
-          <Info size={13} />
-          <span>
-            Each person can vote for up to 3 projects. Votes are anonymous and verified via browser fingerprinting.
-            One vote per project per person.
+    <div className="mx-auto w-full max-w-5xl space-y-5 pb-8">
+      {/* Hero — AIRA-style solid cards (no navy band) */}
+      <div className="aira-card animate-fade-in-up overflow-hidden border-gray-200 p-6 shadow-md">
+        <Badge className="mb-3 border-0 bg-[#FFF1E6] text-[#C2410C] text-xs font-semibold">
+          <Heart size={11} className="mr-1.5" /> Public voting — 20% of final score
+        </Badge>
+        <h1 className="text-2xl font-bold tracking-tight text-[#1A2B3C] sm:text-3xl">Vote for your favourite project</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600">
+          Community votes count for <strong className="text-[#1A2B3C]">20%</strong> of the final score. You may vote for up
+          to <strong className="text-[#1A2B3C]">3 projects</strong>. Use the sidebar to return home or explore other areas.
+        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-gray-500">
+          <span className="flex items-center gap-1.5">
+            <Heart size={12} className="text-[#E85A14]" /> {totalVotes.toLocaleString()} total votes
           </span>
+          <span className="flex items-center gap-1.5">
+            <CheckCircle2 size={12} className="text-[#1D9E8B]" /> {demoProjects.length} projects
+          </span>
+          {!votingClosed && <span className="font-medium text-[#C2410C]">Closes 15 Apr 2026</span>}
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-5">
+      {/* Rules banner — brand orange */}
+      <div className="flex items-start gap-2 rounded-xl border border-orange-200 bg-[#E85A14] px-4 py-3 text-xs text-white shadow-sm animate-fade-in-up" style={{ animationDelay: '80ms' }}>
+        <Info size={15} className="mt-0.5 shrink-0" />
+        <p className="leading-relaxed">
+          Each person can vote for up to 3 projects. Votes are stored in this demo in your browser. One toggle per project.
+        </p>
+      </div>
+
+      <div className="space-y-5">
         {/* Top 3 podium */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div className="aira-card p-5 shadow-md">
           <h2 className="text-sm font-semibold text-[#1A2B3C] mb-4 flex items-center gap-2">
-            <Trophy size={15} className="text-amber-500" /> Current Leaderboard
+            <Trophy size={15} className="text-[#E85A14]" /> Current leaderboard
           </h2>
           <div className="flex items-end gap-3 justify-center">
             {[ranked[1], ranked[0], ranked[2]].map((project, i) => {
@@ -195,10 +165,10 @@ export default function PeoplesChoicePage() {
               <button
                 key={c}
                 onClick={() => setFilter(c)}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
                   filter === c
-                    ? 'bg-[#1D9E8B] text-white'
-                    : 'bg-white text-gray-500 border border-gray-200 hover:border-[#1D9E8B] hover:text-[#1D9E8B]'
+                    ? 'bg-[#E85A14] text-white shadow-sm'
+                    : 'bg-white text-gray-500 border border-gray-200 hover:border-[#E85A14] hover:text-[#C2410C]'
                 }`}
               >
                 {c === 'all' ? 'All Countries' : c}
@@ -263,7 +233,7 @@ export default function PeoplesChoicePage() {
                       <span className="text-gray-500">{projectVotes.toLocaleString()} votes</span>
                       <span className={`font-medium ${isVoted ? 'text-[#1D9E8B]' : 'text-gray-400'}`}>{pct.toFixed(0)}%</span>
                     </div>
-                    <Progress value={pct} className={`h-2 ${isVoted ? 'progress-teal' : ''}`} />
+                    <Progress value={pct} className={`h-2 ${isVoted ? 'progress-orange' : ''}`} />
                   </div>
 
                   <Button
@@ -272,9 +242,9 @@ export default function PeoplesChoicePage() {
                     onClick={() => handleVote(project.id)}
                     className={`w-full gap-2 text-xs transition-all ${
                       isVoted
-                        ? 'bg-[#1D9E8B] hover:bg-red-500 text-white'
+                        ? 'bg-[#E85A14] hover:bg-red-600 text-white'
                         : canVote && !votingClosed
-                        ? 'bg-white border border-[#1D9E8B] text-[#1D9E8B] hover:bg-[#1D9E8B] hover:text-white'
+                        ? 'bg-white border-2 border-[#E85A14] text-[#C2410C] hover:bg-[#E85A14] hover:text-white'
                         : 'bg-gray-50 text-gray-300 border border-gray-100 cursor-not-allowed'
                     }`}
                   >

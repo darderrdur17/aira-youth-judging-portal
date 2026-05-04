@@ -1,8 +1,9 @@
-import { TopNav } from '@/components/shared/TopNav'
+import { PortalChrome } from '@/components/shared/PortalChrome'
 import { isSupabaseConfigured } from '@/lib/supabase/config'
 import { createClient } from '@/lib/supabase/server'
 import { hasJudgeProfile } from '@/lib/auth/judge-access'
 import { DEMO_SESSION_COOKIE } from '@/lib/auth/demo-session'
+import { DEMO_COMPETITION } from '@/lib/demo-data'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 
@@ -10,28 +11,25 @@ export default async function JudgeLayout({ children }: { children: React.ReactN
   const cookieStore = await cookies()
   if (cookieStore.get(DEMO_SESSION_COOKIE)?.value === '1') {
     return (
-      <div className="min-h-screen bg-[#F7F8FA]">
-        <TopNav role="judge" />
-        <main className="max-w-7xl mx-auto px-4 py-6">{children}</main>
-      </div>
+      <PortalChrome role="judge" competitionName={DEMO_COMPETITION.name}>
+        {children}
+      </PortalChrome>
     )
   }
 
   if (process.env.NEXT_PUBLIC_ENABLE_UNAUTHENTICATED_DEMO === 'true') {
     return (
-      <div className="min-h-screen bg-[#F7F8FA]">
-        <TopNav role="judge" />
-        <main className="max-w-7xl mx-auto px-4 py-6">{children}</main>
-      </div>
+      <PortalChrome role="judge" competitionName={DEMO_COMPETITION.name}>
+        {children}
+      </PortalChrome>
     )
   }
 
   if (!isSupabaseConfigured()) {
     return (
-      <div className="min-h-screen bg-[#F7F8FA]">
-        <TopNav role="judge" />
-        <main className="max-w-7xl mx-auto px-4 py-6">{children}</main>
-      </div>
+      <PortalChrome role="judge" competitionName={DEMO_COMPETITION.name}>
+        {children}
+      </PortalChrome>
     )
   }
 
@@ -55,9 +53,13 @@ export default async function JudgeLayout({ children }: { children: React.ReactN
     'Judge'
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
-      <TopNav role="judge" userName={displayName} userEmail={user.email ?? ''} />
-      <main className="max-w-7xl mx-auto px-4 py-6">{children}</main>
-    </div>
+    <PortalChrome
+      role="judge"
+      userName={displayName}
+      userEmail={user.email ?? ''}
+      competitionName={DEMO_COMPETITION.name}
+    >
+      {children}
+    </PortalChrome>
   )
 }

@@ -14,6 +14,10 @@
     --color-purple: #7C5CBF;
     --color-green: #6DBF67;
     --color-gray-bg: #F7F8FA;
+    /* AIRA dashboard shell (matches registration analytics UI) */
+    --aira-sidebar: #E85A14;
+    --aira-canvas: #EDEEF1;
+    --aira-orange-text: #C2410C;
     --color-gray-border: #E2E6EA;
     --color-gray-text: #6B7280;
     --color-gray-dark: #374151;
@@ -104,6 +108,10 @@
   background-color: var(--color-primary);
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.progress-orange [data-slot="progress-indicator"] {
+  background-color: var(--aira-sidebar);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 /* All progress indicators animate smoothly */
 [data-slot="progress-indicator"] {
@@ -182,4 +190,18 @@
 /* ─── Vote bar transition ────────────────────────────────── */
 .vote-bar-fill {
   transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* AIRA portal shell */
+.aira-sidebar {
+  background-color: var(--aira-sidebar);
+}
+.aira-main-animate {
+  animation: fadeInUp 0.4s ease-out both;
+}
+.aira-card {
+  @apply rounded-xl border border-gray-200 bg-white shadow-sm;
+}
+.sidebar-link-active {
+  @apply bg-white font-semibold text-[var(--aira-orange-text)] shadow-sm;
 }
