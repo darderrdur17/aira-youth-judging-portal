@@ -6,7 +6,7 @@ export const SAMPLE_TEAM_SUBMISSION_PDF = '/samples/projects/proj-001.pdf'
 
 export const DEMO_COMPETITION: Competition = {
   id: 'comp-2026',
-  name: '2026: AIRA Youth Challenge',
+  name: 'AI Ready ASEAN Youth Challenge 2026',
   slug: 'airayc-2026',
   logo_url: null,
   deadline: '2026-04-15T04:00:00Z', // 15 April 2026 12:00 GMT+8

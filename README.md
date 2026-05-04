@@ -168,7 +168,7 @@ src/
 │       ├── results/              # Ranked results + chart
 │       └── audit/                # Audit log
 ├── components/
-│   ├── shared/                   # PortalChrome (AIRA sidebar shell), CountryBadge, DeadlineCountdown
+│   ├── shared/                   # TopNav, CountryBadge, DeadlineCountdown
 │   └── ui/                       # shadcn components
 └── lib/
     ├── types/                    # TypeScript types + scoring logic

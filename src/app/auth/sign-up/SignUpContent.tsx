@@ -119,40 +119,40 @@ export default function SignUpContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--aira-canvas)] lg:grid lg:min-h-screen lg:grid-cols-2">
-      <div className="relative flex flex-col justify-between bg-[#E85A14] px-6 py-8 text-white sm:px-10 sm:py-12 lg:min-h-screen">
-        <div>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm text-white/90 transition-colors hover:text-white"
-          >
+    <div className="min-h-screen bg-[#F7F8FA] flex flex-col">
+      <div className="bg-[#1A2B3C] px-4 py-3">
+        <div className="max-w-6xl mx-auto flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm">
             <ArrowLeft size={14} />
-            Home
+            Back
           </Link>
-          <h2 className="mt-8 text-2xl font-bold leading-tight sm:text-3xl">2026: AIRA Youth Challenge</h2>
-          <p className="mt-3 max-w-md text-sm leading-relaxed text-white/90">
-            Create your account for the judging portal. You still need organiser approval or a judge invitation for full
-            access.
-          </p>
+          <div className="flex-1" />
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-[#1D9E8B] flex items-center justify-center">
+              <span className="text-white text-[10px] font-bold">AJ</span>
+            </div>
+            <span className="text-white text-sm font-semibold">AISG Judging Portal</span>
+          </div>
         </div>
-        <p className="mt-8 text-xs text-white/75 lg:mt-0">AI Ready ASEAN · Youth Challenge</p>
       </div>
 
-      <div className="flex flex-1 items-center justify-center p-4 sm:p-8">
-        <div className="w-full max-w-md animate-fade-in-up">
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
-            <div className={`border-b border-gray-100 px-6 py-5 ${isOrganiser ? 'bg-[#FFF1E6]' : 'bg-[#E8F7F4]'}`}>
+            <div className={`px-6 py-5 border-b border-gray-100 ${isOrganiser ? 'bg-[#1A2B3C]' : 'bg-[#E1F5EE]'}`}>
               <Badge
-                className={`mb-2 border-0 text-xs font-semibold ${
+                className={`mb-2 text-xs font-medium ${
                   isOrganiser
-                    ? 'bg-[#E85A14] text-white'
-                    : 'bg-[#1D9E8B] text-white'
+                    ? 'bg-[#2A3F52] text-white border border-[#3D5669]'
+                    : 'bg-white text-[#0F6E56] border border-[#1D9E8B]'
                 }`}
               >
                 Create account · {isOrganiser ? 'Organiser' : 'Judge'}
               </Badge>
-              <h1 className="text-xl font-bold text-[#1A2B3C]">Sign up</h1>
-              <p className="mt-1 text-sm text-gray-600">
+              <h1 className={`text-xl font-bold ${isOrganiser ? 'text-white' : 'text-[#1A2B3C]'}`}>
+                Sign up
+              </h1>
+              <p className={`text-sm mt-1 ${isOrganiser ? 'text-gray-300' : 'text-[#0F6E56]'}`}>
                 {isOrganiser
                   ? 'Create your login. You also need organiser access (allowlisted email or competition owner) to open the organiser portal.'
                   : 'Create your login with email and password. Your organiser must add this same email under Judges so you can score after you confirm your email.'}

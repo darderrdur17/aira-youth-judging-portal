@@ -796,9 +796,9 @@ export default function OrganiserProjectsPage() {
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <Table>
+        <Table className="table-row-hover">
           <TableHeader>
-            <TableRow className="bg-[#1A2B3C] hover:bg-[#1A2B3C]">
+            <TableRow className="bg-[#E85A14] hover:bg-[#E85A14]">
               <TableHead className="text-white text-xs font-semibold">#</TableHead>
               <TableHead className="text-white text-xs font-semibold">Project Name</TableHead>
               <TableHead className="text-white text-xs font-semibold">Country</TableHead>

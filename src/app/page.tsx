@@ -1,93 +1,89 @@
 import Link from 'next/link'
-import { Users, BarChart3, Heart, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Users, BarChart3, Heart } from 'lucide-react'
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[var(--aira-canvas)] lg:grid lg:min-h-screen lg:grid-cols-2">
-      <div className="flex flex-col justify-between bg-[#E85A14] px-6 py-10 text-white sm:px-12 sm:py-14 lg:min-h-screen">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-white/80">AIRA / AI Ready ASEAN</p>
-          <h1 className="mt-4 text-3xl font-bold leading-tight sm:text-4xl">2026: AIRA Youth Challenge</h1>
-          <p className="mt-4 max-w-md text-sm leading-relaxed text-white/90">
-            Judging portal — manage registrations-style workflows, assign judges, review submissions, and run the
-            People&apos;s Choice vote. Built for organisers, judges, and the public.
-          </p>
-          <ul className="mt-8 space-y-3 text-sm text-white/90">
-            <li className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-xs font-bold">1</span>
-              Organisers — projects, judges, assignments, results
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-xs font-bold">2</span>
-              Judges — score criteria per assignment
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-xs font-bold">3</span>
-              Public — up to 3 votes for People&apos;s Choice
-            </li>
-          </ul>
-        </div>
-        <p className="mt-10 text-xs text-white/70 lg:mt-0">IMDA · AI Singapore · ASEAN Foundation · Google.org</p>
-      </div>
-
-      <div className="flex flex-col justify-center px-4 py-10 sm:px-10 lg:py-14">
-        <div className="mx-auto w-full max-w-md space-y-4 animate-fade-in-up">
-          <div className="mb-2">
-            <h2 className="text-lg font-semibold text-[#1A2B3C]">Choose a portal</h2>
-            <p className="text-sm text-gray-500">Same look as the AIRA admin dashboards — solid colours, clear hierarchy.</p>
+    <div className="min-h-screen bg-[#F7F8FA] flex flex-col">
+      <header className="border-b border-gray-200 bg-white shadow-[0_1px_0_rgba(26,43,60,0.06)]">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-[#E85A14] flex items-center justify-center shrink-0">
+              <span className="text-white text-xs font-bold">AJ</span>
+            </div>
+            <span className="font-semibold text-[#1A2B3C] text-sm truncate">AISG Judging Portal</span>
           </div>
-
-          <Link href="/auth/login?role=judge" className="block">
-            <div className="aira-card group hover-lift flex items-center gap-4 p-4 shadow-md transition-all">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#E8F7F4] text-[#1D9E8B]">
-                <Users size={24} />
-              </div>
-              <div className="min-w-0 flex-1 text-left">
-                <p className="font-semibold text-[#1A2B3C]">Judge portal</p>
-                <p className="text-xs text-gray-500">Score assigned projects</p>
-              </div>
-              <ChevronRight className="shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5" size={18} />
-            </div>
-          </Link>
-
-          <Link href="/auth/login?role=organiser" className="block">
-            <div className="aira-card group hover-lift flex items-center gap-4 p-4 shadow-md transition-all">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#FFF1E6] text-[#E85A14]">
-                <BarChart3 size={24} />
-              </div>
-              <div className="min-w-0 flex-1 text-left">
-                <p className="font-semibold text-[#1A2B3C]">Organiser portal</p>
-                <p className="text-xs text-gray-500">Projects, judges, assignments, results</p>
-              </div>
-              <ChevronRight className="shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5" size={18} />
-            </div>
-          </Link>
-
-          <Link href="/vote" className="block">
-            <div className="aira-card group hover-lift flex items-center gap-4 border-pink-100 bg-white p-4 shadow-md transition-all">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-pink-50 text-pink-600">
-                <Heart size={24} />
-              </div>
-              <div className="min-w-0 flex-1 text-left">
-                <p className="font-semibold text-[#1A2B3C]">People&apos;s choice vote</p>
-                <p className="text-xs text-gray-500">Public voting — no login</p>
-              </div>
-              <ChevronRight className="shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5" size={18} />
-            </div>
-          </Link>
-
-          <div className="flex flex-wrap gap-2 pt-2 text-[11px] text-gray-500">
-            <span>Have an account?</span>
-            <Link href="/auth/login?role=judge" className="font-medium text-[#E85A14] hover:underline">
+          <div className="flex flex-wrap items-center justify-end gap-1.5 text-[11px] sm:text-xs">
+            <Link href="/auth/login?role=judge" className="text-[#1D9E8B] font-medium hover:underline px-1">
               Judge login
             </Link>
-            <span className="text-gray-300">·</span>
-            <Link href="/auth/login?role=organiser" className="font-medium text-[#E85A14] hover:underline">
+            <span className="text-gray-300 hidden sm:inline">·</span>
+            <Link href="/auth/login?role=organiser" className="text-[#1D9E8B] font-medium hover:underline px-1">
               Organiser login
             </Link>
-            <span className="text-gray-300">·</span>
-            <Link href="/auth/sign-up?role=judge" className="font-medium text-gray-600 hover:underline">
+            <span className="text-gray-300 hidden sm:inline">·</span>
+            <Link href="/auth/sign-up?role=judge" className="text-gray-500 hover:text-[#1D9E8B] px-1">
               Sign up
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-lg space-y-6 text-center">
+          <div>
+            <h1 className="text-2xl font-bold text-[#1A2B3C]">Choose a portal</h1>
+            <p className="text-sm text-gray-500 mt-1.5">
+              Judge scoring, organiser administration, or public voting.
+            </p>
+          </div>
+
+          <div className="grid gap-3">
+            <Link href="/auth/login?role=judge" className="block">
+              <Button
+                size="lg"
+                className="w-full h-auto py-4 gap-3 bg-[#E85A14] hover:bg-[#C2410C] text-white justify-center shadow-sm"
+              >
+                <Users size={22} className="shrink-0" />
+                <span className="text-left">
+                  <span className="block font-semibold">Judge portal</span>
+                  <span className="block text-xs font-normal text-[#D2F7EF] opacity-95">
+                    Log in to score assigned projects
+                  </span>
+                </span>
+              </Button>
+            </Link>
+
+            <Link href="/auth/login?role=organiser" className="block">
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full h-auto py-4 gap-3 border-gray-200 bg-white text-[#1A2B3C] hover:bg-orange-50 hover:border-[#E85A14] justify-center shadow-sm"
+              >
+                <BarChart3 size={22} className="shrink-0 text-[#E85A14]" />
+                <span className="text-left">
+                  <span className="block font-semibold">Organiser portal</span>
+                  <span className="block text-xs font-normal text-gray-500">
+                    Projects, judges, assignments, results
+                  </span>
+                </span>
+              </Button>
+            </Link>
+
+            <Link href="/vote" className="block">
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full h-auto py-4 gap-3 border-pink-200 bg-white text-pink-700 hover:bg-pink-50 justify-center shadow-sm"
+              >
+                <Heart size={22} className="shrink-0" />
+                <span className="text-left">
+                  <span className="block font-semibold">People&apos;s choice vote</span>
+                  <span className="block text-xs font-normal text-pink-600/90">
+                    Public voting (no login)
+                  </span>
+                </span>
+              </Button>
             </Link>
           </div>
 
@@ -95,7 +91,7 @@ export default function HomePage() {
             Try the UI without email: use <strong className="text-gray-600">Demo login</strong> on the login page.
           </p>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

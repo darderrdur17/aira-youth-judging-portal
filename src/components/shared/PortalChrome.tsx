@@ -110,18 +110,18 @@ export function PortalChrome({
   }
 
   const organiserLinks: { href: string; label: string; icon: ComponentType<{ className?: string; size?: number }> }[] = [
-    { href: '/organiser/dashboard', label: 'Summary', icon: LayoutDashboard },
-    { href: '/organiser/projects', label: 'Submissions review', icon: FolderKanban },
+    { href: '/organiser/dashboard', label: 'Summary of Registrations', icon: LayoutDashboard },
     { href: '/organiser/judges', label: 'Judges', icon: Users },
     { href: '/organiser/assignments', label: 'Assignments', icon: Link2 },
+    { href: '/organiser/projects', label: 'Submissions Review', icon: FolderKanban },
     { href: '/organiser/results', label: 'Results', icon: BarChart3 },
-    { href: '/organiser/calibration', label: 'Calibration', icon: SlidersHorizontal },
-    { href: '/organiser/audit', label: 'Audit log', icon: ScrollText },
+    { href: '/organiser/calibration', label: 'Score Calibration', icon: SlidersHorizontal },
+    { href: '/organiser/audit', label: 'Audit Log', icon: ScrollText },
     { href: '/organiser/setup', label: 'Setup', icon: Settings },
   ]
 
   const judgeLinks: { href: string; label: string; icon: ComponentType<{ className?: string; size?: number }> }[] = [
-    { href: '/judge/dashboard', label: 'My assignments', icon: LayoutList },
+    { href: '/judge/dashboard', label: 'My Assignments', icon: LayoutList },
   ]
 
   const links = isOrganiser ? organiserLinks : judgeLinks
