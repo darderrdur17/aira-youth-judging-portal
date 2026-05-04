@@ -564,9 +564,9 @@ export default function OrganiserDashboardPage() {
       <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-[#1A2B3C]">Overall judging progress</h2>
-          <span className="text-xs font-bold text-[#1D9E8B]">{overallPct.toFixed(0)}% complete</span>
+          <span className="text-xs font-bold text-[#E85A14]">{overallPct.toFixed(0)}% complete</span>
         </div>
-        <Progress value={overallPct} className="progress-teal mb-2 h-2.5" />
+        <Progress value={overallPct} className="progress-brand mb-2 h-2.5" />
         <p className="text-xs text-gray-400">
           {submittedAssignments} of {totalAssignments} assignments submitted
         </p>

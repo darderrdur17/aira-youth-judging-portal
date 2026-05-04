@@ -128,7 +128,7 @@ export default function SignUpContent() {
           </Link>
           <div className="flex-1" />
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-[#1D9E8B] flex items-center justify-center">
+            <div className="w-6 h-6 rounded bg-[#E85A14] flex items-center justify-center">
               <span className="text-white text-[10px] font-bold">AJ</span>
             </div>
             <span className="text-white text-sm font-semibold">AISG Judging Portal</span>
@@ -138,13 +138,13 @@ export default function SignUpContent() {
 
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
-            <div className={`px-6 py-5 border-b border-gray-100 ${isOrganiser ? 'bg-[#1A2B3C]' : 'bg-[#E1F5EE]'}`}>
+          <div className="auth-shell-animate bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
+            <div className={`px-6 py-5 border-b border-gray-100 ${isOrganiser ? 'bg-[#1A2B3C]' : 'bg-[#FFF3EF]'}`}>
               <Badge
                 className={`mb-2 text-xs font-medium ${
                   isOrganiser
                     ? 'bg-[#2A3F52] text-white border border-[#3D5669]'
-                    : 'bg-white text-[#0F6E56] border border-[#1D9E8B]'
+                    : 'bg-white text-[#C2410C] border border-[#E85A14]'
                 }`}
               >
                 Create account · {isOrganiser ? 'Organiser' : 'Judge'}
@@ -152,7 +152,7 @@ export default function SignUpContent() {
               <h1 className={`text-xl font-bold ${isOrganiser ? 'text-white' : 'text-[#1A2B3C]'}`}>
                 Sign up
               </h1>
-              <p className={`text-sm mt-1 ${isOrganiser ? 'text-gray-300' : 'text-[#0F6E56]'}`}>
+              <p className={`text-sm mt-1 ${isOrganiser ? 'text-gray-300' : 'text-gray-600'}`}>
                 {isOrganiser
                   ? 'Create your login. You also need organiser access (allowlisted email or competition owner) to open the organiser portal.'
                   : 'Create your login with email and password. Your organiser must add this same email under Judges so you can score after you confirm your email.'}
@@ -175,8 +175,8 @@ export default function SignUpContent() {
 
               {sent ? (
                 <div className="text-center py-4">
-                  <div className="w-14 h-14 rounded-full bg-[#E1F5EE] flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="text-[#1D9E8B]" size={28} />
+                  <div className="w-14 h-14 rounded-full bg-[#FFF3EF] flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="text-[#E85A14]" size={28} />
                   </div>
                   <h3 className="font-semibold text-[#1A2B3C] mb-1">Confirm your email</h3>
                   <p className="text-gray-500 text-sm">
@@ -185,7 +185,7 @@ export default function SignUpContent() {
                   </p>
                   <Link
                     href={`/auth/login?role=${role}`}
-                    className="mt-4 flex w-full items-center justify-center rounded-lg border border-[#1D9E8B] bg-white px-4 py-2 text-sm font-medium text-[#1D9E8B] hover:bg-[#E1F5EE]"
+                    className="mt-4 flex w-full items-center justify-center rounded-lg border border-[#E85A14] bg-white px-4 py-2 text-sm font-medium text-[#E85A14] hover:bg-[#FFF3EF]"
                   >
                     Back to login
                   </Link>
@@ -205,7 +205,7 @@ export default function SignUpContent() {
                         placeholder="e.g. Dr. Sarah Chen"
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
-                        className="pl-9 border-gray-200 focus-visible:ring-[#1D9E8B]"
+                        className="pl-9 border-gray-200 focus-visible:ring-[#E85A14]"
                       />
                     </div>
                   </div>
@@ -223,7 +223,7 @@ export default function SignUpContent() {
                         placeholder={isOrganiser ? 'organiser@example.com' : 'judge@example.com'}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-9 border-gray-200 focus-visible:ring-[#1D9E8B]"
+                        className="pl-9 border-gray-200 focus-visible:ring-[#E85A14]"
                         required
                       />
                     </div>
@@ -242,7 +242,7 @@ export default function SignUpContent() {
                         placeholder="At least 8 characters"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="pl-9 border-gray-200 focus-visible:ring-[#1D9E8B]"
+                        className="pl-9 border-gray-200 focus-visible:ring-[#E85A14]"
                         required
                         minLength={8}
                       />
@@ -262,7 +262,7 @@ export default function SignUpContent() {
                         placeholder="Repeat password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="pl-9 border-gray-200 focus-visible:ring-[#1D9E8B]"
+                        className="pl-9 border-gray-200 focus-visible:ring-[#E85A14]"
                         required minLength={8}
                       />
                     </div>
@@ -271,7 +271,7 @@ export default function SignUpContent() {
                   <Button
                     type="submit"
                     disabled={loading || !isSupabaseConfigured()}
-                    className="w-full bg-[#1D9E8B] hover:bg-[#0F6E56] text-white gap-2"
+                    className="w-full bg-[#E85A14] hover:bg-[#C2410C] text-white gap-2"
                   >
                     {loading ? (
                       <>
@@ -287,7 +287,7 @@ export default function SignUpContent() {
 
               <p className="text-center text-xs text-gray-500 mt-4">
                 Already have an account?{' '}
-                <Link href={`/auth/login?role=${role}`} className="text-[#1D9E8B] hover:underline font-medium">
+                <Link href={`/auth/login?role=${role}`} className="text-[#E85A14] hover:underline font-medium">
                   Log in
                 </Link>
               </p>

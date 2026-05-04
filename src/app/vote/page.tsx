@@ -67,7 +67,7 @@ export default function PeoplesChoicePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in-up">
       {/* Page header */}
       <div>
         <div className="flex items-center gap-3 mb-1">
@@ -216,7 +216,7 @@ export default function PeoplesChoicePage() {
                       className="h-full rounded-full transition-[width] duration-700"
                       style={{
                         width: `${pct}%`,
-                        backgroundColor: isVoted ? '#E85A14' : '#1D9E8B',
+                        backgroundColor: isVoted ? '#E85A14' : '#FB923C',
                       }}
                     />
                   </div>

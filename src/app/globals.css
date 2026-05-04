@@ -89,10 +89,10 @@
   @apply w-9 h-9 rounded-md border text-sm font-semibold transition-all duration-150 cursor-pointer;
 }
 .score-btn:not(.score-btn-active) {
-  @apply border-gray-200 text-gray-500 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50;
+  @apply border-gray-200 text-gray-500 hover:border-[#F0A070] hover:text-[#C2410C] hover:bg-[#FFF3EF];
 }
 .score-btn-active {
-  @apply border-teal-500 bg-teal-500 text-white shadow-sm;
+  @apply border-[#E85A14] bg-[#E85A14] text-white shadow-sm;
 }
 
 /* Country badge pulse on pending */
@@ -108,6 +108,12 @@
 .progress-teal [data-slot="progress-indicator"] {
   background-color: var(--color-primary);
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Brand (AIRA orange) progress — use for cross-portal completion bars */
+.progress-brand [data-slot="progress-indicator"] {
+  background-color: var(--aira-orange);
+  transition: width 0.85s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
 /* All progress indicators animate smoothly */
@@ -197,11 +203,16 @@
 
 /* ─── AIRA Main content page-entry animation ─────────────── */
 @keyframes airaSlideIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .aira-main-animate {
-  animation: airaSlideIn 0.28s ease-out both;
+  animation: airaSlideIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Auth / marketing cards — slightly bouncier entrance */
+.auth-shell-animate {
+  animation: popIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* ─── Table helpers ──────────────────────────────────────── */

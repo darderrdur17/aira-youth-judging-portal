@@ -14,15 +14,15 @@ export default function HomePage() {
             <span className="font-semibold text-[#1A2B3C] text-sm truncate">AISG Judging Portal</span>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-1.5 text-[11px] sm:text-xs">
-            <Link href="/auth/login?role=judge" className="text-[#1D9E8B] font-medium hover:underline px-1">
+            <Link href="/auth/login?role=judge" className="text-[#E85A14] font-medium hover:underline px-1">
               Judge login
             </Link>
             <span className="text-gray-300 hidden sm:inline">·</span>
-            <Link href="/auth/login?role=organiser" className="text-[#1D9E8B] font-medium hover:underline px-1">
+            <Link href="/auth/login?role=organiser" className="text-[#E85A14] font-medium hover:underline px-1">
               Organiser login
             </Link>
             <span className="text-gray-300 hidden sm:inline">·</span>
-            <Link href="/auth/sign-up?role=judge" className="text-gray-500 hover:text-[#1D9E8B] px-1">
+            <Link href="/auth/sign-up?role=judge" className="text-gray-500 hover:text-[#E85A14] px-1">
               Sign up
             </Link>
           </div>
@@ -30,7 +30,7 @@ export default function HomePage() {
       </header>
 
       <main className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-lg space-y-6 text-center">
+        <div className="w-full max-w-lg space-y-6 text-center animate-fade-in-up">
           <div>
             <h1 className="text-2xl font-bold text-[#1A2B3C]">Choose a portal</h1>
             <p className="text-sm text-gray-500 mt-1.5">

@@ -52,7 +52,7 @@ const SCORE_LABELS: Record<number, string> = {
 const SCORE_COLORS: Record<number, string> = {
   1: 'bg-red-500', 2: 'bg-red-400', 3: 'bg-orange-400',
   4: 'bg-amber-400', 5: 'bg-yellow-400', 6: 'bg-lime-400',
-  7: 'bg-green-400', 8: 'bg-[#1D9E8B]', 9: 'bg-[#1D9E8B]', 10: 'bg-[#0F6E56]',
+  7: 'bg-[#FDBA74]', 8: 'bg-[#FB923C]', 9: 'bg-[#E85A14]', 10: 'bg-[#C2410C]',
 }
 
 export default function ScoringPage() {
@@ -178,7 +178,7 @@ export default function ScoringPage() {
   const nextId = currentIdx < allAssignmentIds.length - 1 ? allAssignmentIds[currentIdx + 1] : null
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto animate-fade-in-up">
       <PdfViewerDialog
         open={pdfOpen}
         onOpenChange={setPdfOpen}
@@ -188,7 +188,7 @@ export default function ScoringPage() {
       {/* Breadcrumb + nav */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 text-xs text-gray-400">
-          <Link href="/judge/dashboard" className="hover:text-[#1D9E8B] flex items-center gap-1">
+          <Link href="/judge/dashboard" className="hover:text-[#E85A14] flex items-center gap-1 transition-colors">
             <ArrowLeft size={12} />
             Dashboard
           </Link>
@@ -238,7 +238,7 @@ export default function ScoringPage() {
                       <Lock size={9} /> Read-only
                     </Badge>
                   ) : state.isSubmitted ? (
-                    <Badge className="bg-[#E1F5EE] text-[#0F6E56] border border-[#B8DDD4] text-[10px] gap-1">
+                    <Badge className="bg-[#FFF3EF] text-[#C2410C] border border-orange-200 text-[10px] gap-1">
                       <CheckCircle2 size={9} /> Submitted
                     </Badge>
                   ) : null}
@@ -273,7 +273,7 @@ export default function ScoringPage() {
                       href={project.pdf_url}
                       className={cn(
                         buttonVariants({ variant: 'outline', size: 'sm' }),
-                        'h-8 gap-1.5 border-[#B8DDD4] bg-[#E1F5EE] text-xs text-[#0F6E56] no-underline'
+                        'h-8 gap-1.5 border-orange-200 bg-[#FFF3EF] text-xs text-[#C2410C] no-underline hover:bg-[#FFE8DC]'
                       )}
                     >
                       <FileText size={14} /> Open PDF (new tab)
@@ -298,8 +298,8 @@ export default function ScoringPage() {
                     </Button>
                   </>
                 ) : (
-                  <p className="text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-md px-2.5 py-1.5">
-                    No submission PDF for this team yet. Ask the organiser to upload a PDF on the Projects page.
+                  <p className="text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-md px-2.5 py-1.5">
+                    No PDF for this team yet. Written proposals and video links are optional — the organiser can add them under Projects when available.
                   </p>
                 )}
                 {project.video_url && (
@@ -309,7 +309,7 @@ export default function ScoringPage() {
                     rel="noreferrer"
                     className={cn(
                       buttonVariants({ variant: 'outline', size: 'sm' }),
-                      'h-8 gap-1.5 border-[#B8DDD4] bg-[#E1F5EE] text-xs text-[#0F6E56] no-underline'
+                      'h-8 gap-1.5 border-orange-200 bg-[#FFF3EF] text-xs text-[#C2410C] no-underline hover:bg-[#FFE8DC]'
                     )}
                   >
                     <Video size={14} /> Watch pitch
@@ -351,7 +351,7 @@ export default function ScoringPage() {
           {/* Keyboard shortcut hint */}
           {!isDeadlinePassed && (
             <div className="bg-[#1A2B3C] rounded-lg px-3 py-2 flex items-center gap-2">
-              <Keyboard size={13} className="text-[#1D9E8B] flex-shrink-0" />
+              <Keyboard size={13} className="text-[#E85A14] flex-shrink-0" />
               <p className="text-[11px] text-gray-400 flex-1">
                 <span className="text-gray-300">Keyboard shortcuts:</span>{' '}
                 Press <kbd className="bg-[#2A3F52] border border-[#3D5669] px-1.5 py-0.5 rounded text-white text-[10px] font-mono shadow-sm">1</kbd>–<kbd className="bg-[#2A3F52] border border-[#3D5669] px-1.5 py-0.5 rounded text-white text-[10px] font-mono shadow-sm">9</kbd> / <kbd className="bg-[#2A3F52] border border-[#3D5669] px-1.5 py-0.5 rounded text-white text-[10px] font-mono shadow-sm">0</kbd>=10 to score ·{' '}
@@ -381,7 +381,7 @@ export default function ScoringPage() {
                     }}
                     className={`w-2.5 h-2.5 rounded-full transition-colors ${
                       state.scores[c.key] !== undefined
-                        ? 'bg-[#1D9E8B]'
+                        ? 'bg-[#E85A14]'
                         : activeCriterionIdx === i
                         ? 'bg-[#1A2B3C]'
                         : 'bg-gray-200'
@@ -402,23 +402,23 @@ export default function ScoringPage() {
                   onClick={() => setActiveCriterionIdx(idx)}
                   className={`bg-white rounded-xl border-2 shadow-sm p-4 cursor-pointer transition-all duration-150 ${
                     isActive
-                      ? 'border-[#1D9E8B] shadow-[0_0_0_3px_rgba(29,158,139,0.18)]'
+                      ? 'border-[#E85A14] shadow-[0_0_0_3px_rgba(232,90,20,0.2)]'
                       : currentScore !== undefined
-                      ? 'border-[#9DCFC6]'
+                      ? 'border-[#FDBA74]'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <div className="flex items-start gap-3 mb-3">
                     {/* Number indicator */}
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5 ${
-                      isActive ? 'bg-[#1D9E8B] text-white' : 'bg-gray-100 text-gray-500'
+                      isActive ? 'bg-[#E85A14] text-white' : 'bg-gray-100 text-gray-500'
                     }`}>
                       {idx + 1}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="font-semibold text-sm text-[#0F6E56]">{criterion.name}</span>
-                        <Badge className="text-[10px] bg-[#1D9E8B] text-white border-none px-1.5 py-0">
+                        <span className="font-semibold text-sm text-[#C2410C]">{criterion.name}</span>
+                        <Badge className="text-[10px] bg-[#E85A14] text-white border-none px-1.5 py-0">
                           {criterion.weight}%
                         </Badge>
                         {currentScore !== undefined && (
@@ -466,7 +466,7 @@ export default function ScoringPage() {
                           style={{ width: `${(currentScore / 10) * 100}%` }}
                         />
                       </div>
-                      <span className="text-[10px] text-[#0F6E56] font-medium w-20 text-right flex-shrink-0">
+                      <span className="text-[10px] text-[#C2410C] font-medium w-20 text-right flex-shrink-0">
                         +{((currentScore / 10) * criterion.weight).toFixed(1)} pts
                       </span>
                     </div>
@@ -492,7 +492,7 @@ export default function ScoringPage() {
                 value={state.personalNotes}
                 onChange={(e) => !isDeadlinePassed && store.setPersonalNotes(assignmentId, e.target.value)}
                 disabled={isDeadlinePassed}
-                className="text-sm resize-none border-gray-200 focus-visible:ring-[#1D9E8B]"
+                  className="text-sm resize-none border-gray-200 focus-visible:ring-[#E85A14]"
                 rows={3}
               />
             </div>
@@ -506,10 +506,10 @@ export default function ScoringPage() {
                   Shared with team after judging closes
                 </Badge>
               </div>
-              <div className="bg-[#E1F5EE] border border-[#B8DDD4] rounded-lg p-3 mb-2">
+              <div className="bg-[#FFF3EF] border border-orange-200 rounded-lg p-3 mb-2">
                 <div className="flex items-start gap-2">
-                  <Info size={13} className="text-[#1D9E8B] mt-0.5 flex-shrink-0" />
-                  <p className="text-[11px] text-[#0F6E56] leading-relaxed">
+                  <Info size={13} className="text-[#E85A14] mt-0.5 flex-shrink-0" />
+                  <p className="text-[11px] text-[#8B4513] leading-relaxed">
                     Suggested structure: <strong>Strengths</strong> (what they did well) →{' '}
                     <strong>Areas to improve</strong> (specific, actionable) →{' '}
                     <strong>Key pointers</strong> (top 1–2 recommendations for next iteration)
@@ -521,7 +521,7 @@ export default function ScoringPage() {
                 value={state.teamFeedback}
                 onChange={(e) => !isDeadlinePassed && store.setTeamFeedback(assignmentId, e.target.value)}
                 disabled={isDeadlinePassed}
-                className="text-sm resize-none border-gray-200 focus-visible:ring-[#1D9E8B]"
+                  className="text-sm resize-none border-gray-200 focus-visible:ring-[#E85A14]"
                 rows={4}
               />
               <p className="text-[10px] text-gray-400 text-right">
@@ -546,7 +546,7 @@ export default function ScoringPage() {
                 <Button
                   onClick={() => handleSave(true)}
                   disabled={saving || !allScored}
-                  className="w-full sm:w-auto gap-2 bg-[#1D9E8B] hover:bg-[#0F6E56] text-white"
+                  className="w-full sm:w-auto gap-2 bg-[#E85A14] hover:bg-[#C2410C] text-white transition-transform active:scale-[0.98]"
                 >
                   {saving ? (
                     <span className="flex items-center gap-1.5">
@@ -584,13 +584,13 @@ export default function ScoringPage() {
             {/* Total */}
             <div className="bg-[#1A2B3C] rounded-xl p-4 text-center mb-4">
               <p className="text-xs text-gray-400 mb-1">Weighted Total</p>
-              <p className="text-4xl font-bold text-[#1D9E8B]">
+              <p className="text-4xl font-bold text-[#E85A14]">
                 {scoredCount > 0 ? weightedTotal.toFixed(2) : '—'}
               </p>
               <p className="text-xs text-gray-400 mt-1">/ {TOTAL_MAX_SCORE} pts</p>
               {scoredCount > 0 && (
                 <>
-                  <Progress value={(weightedTotal / TOTAL_MAX_SCORE) * 100} className="h-1.5 mt-3 progress-teal" />
+                  <Progress value={(weightedTotal / TOTAL_MAX_SCORE) * 100} className="h-1.5 mt-3 progress-brand" />
                   <p className="text-[10px] text-gray-400 mt-1">
                     {((weightedTotal / TOTAL_MAX_SCORE) * 100).toFixed(0)}% of max
                   </p>
@@ -614,11 +614,11 @@ export default function ScoringPage() {
                     className={`w-full text-left transition-all ${isActive ? 'opacity-100' : 'opacity-80 hover:opacity-100'}`}
                   >
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className={`text-[11px] truncate flex-1 ${isActive ? 'text-[#0F6E56] font-semibold' : 'text-gray-600'}`}>
+                      <span className={`text-[11px] truncate flex-1 ${isActive ? 'text-[#C2410C] font-semibold' : 'text-gray-600'}`}>
                         {c.name}
                       </span>
                       <span className={`text-[11px] font-semibold ml-2 flex-shrink-0 ${
-                        s !== undefined ? 'text-[#1D9E8B]' : 'text-gray-300'
+                        s !== undefined ? 'text-[#E85A14]' : 'text-gray-300'
                       }`}>
                         {s !== undefined ? `${contribution.toFixed(1)}` : '—'}
                       </span>
@@ -626,7 +626,7 @@ export default function ScoringPage() {
                     <div className="relative h-1.5 bg-gray-100 rounded-full overflow-hidden">
                       <div
                         className={`absolute left-0 top-0 h-full rounded-full transition-all duration-300 ${
-                          s !== undefined ? (SCORE_COLORS[s] || 'bg-[#1D9E8B]') : 'bg-gray-200'
+                          s !== undefined ? (SCORE_COLORS[s] || 'bg-[#E85A14]') : 'bg-gray-200'
                         }`}
                         style={{ width: s !== undefined ? `${(s / 10) * 100}%` : '0%' }}
                       />
@@ -644,9 +644,9 @@ export default function ScoringPage() {
             <div className="mt-4 pt-3 border-t border-gray-100">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs text-gray-500">Criteria scored</span>
-                <span className="text-xs font-semibold text-[#1D9E8B]">{scoredCount}/{JUDGING_CRITERIA.length}</span>
+                <span className="text-xs font-semibold text-[#E85A14]">{scoredCount}/{JUDGING_CRITERIA.length}</span>
               </div>
-              <Progress value={(scoredCount / JUDGING_CRITERIA.length) * 100} className="h-1.5 progress-teal" />
+              <Progress value={(scoredCount / JUDGING_CRITERIA.length) * 100} className="h-1.5 progress-brand" />
             </div>
           </div>
 
@@ -677,11 +677,11 @@ export default function ScoringPage() {
                     criterionRefs.current[i]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
                   }}
                   className={`w-full flex items-center gap-2 px-2 py-1 rounded text-left transition-colors ${
-                    activeCriterionIdx === i ? 'bg-[#E1F5EE] text-[#0F6E56]' : 'hover:bg-gray-50 text-gray-600'
+                    activeCriterionIdx === i ? 'bg-[#FFF3EF] text-[#C2410C]' : 'hover:bg-gray-50 text-gray-600'
                   }`}
                 >
                   <span className={`w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center flex-shrink-0 ${
-                    state.scores[c.key] !== undefined ? 'bg-[#1D9E8B] text-white' : 'bg-gray-200 text-gray-500'
+                    state.scores[c.key] !== undefined ? 'bg-[#E85A14] text-white' : 'bg-gray-200 text-gray-500'
                   }`}>
                     {state.scores[c.key] ?? i + 1}
                   </span>

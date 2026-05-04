@@ -98,7 +98,7 @@ export default function JudgeDashboardPage() {
     })
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-fade-in-up">
       <PdfViewerDialog
         open={pdfOpen}
         onOpenChange={setPdfOpen}
@@ -126,24 +126,24 @@ export default function JudgeDashboardPage() {
           {
             label: 'Judged', value: judgedCount,
             icon: <CheckCheck size={18} />,
-            strip: 'stat-strip-teal', iconBg: 'bg-[#E1F5EE]', iconColor: 'text-[#1D9E8B]',
-            valueColor: judgedCount === rows.length ? 'text-[#1D9E8B]' : 'text-[#1A2B3C]',
+            strip: 'stat-strip-orange', iconBg: 'bg-[#FFF3EF]', iconColor: 'text-[#E85A14]',
+            valueColor: judgedCount === rows.length ? 'text-[#E85A14]' : 'text-[#1A2B3C]',
           },
           {
             label: 'Remaining', value: pendingCount,
             icon: <Clock size={18} />,
-            strip: pendingCount > 0 ? 'stat-strip-amber' : 'stat-strip-teal',
-            iconBg: pendingCount > 0 ? 'bg-amber-50' : 'bg-[#E1F5EE]',
-            iconColor: pendingCount > 0 ? 'text-amber-600' : 'text-[#1D9E8B]',
-            valueColor: pendingCount > 0 ? 'text-amber-600' : 'text-[#1D9E8B]',
+            strip: pendingCount > 0 ? 'stat-strip-amber' : 'stat-strip-orange',
+            iconBg: pendingCount > 0 ? 'bg-amber-50' : 'bg-[#FFF3EF]',
+            iconColor: pendingCount > 0 ? 'text-amber-600' : 'text-[#E85A14]',
+            valueColor: pendingCount > 0 ? 'text-amber-600' : 'text-[#E85A14]',
           },
           {
             label: 'Completion', value: `${completionPct.toFixed(0)}%`,
             icon: <CheckCircle2 size={18} />,
-            strip: completionPct === 100 ? 'stat-strip-teal' : 'stat-strip-orange',
-            iconBg: completionPct === 100 ? 'bg-[#E1F5EE]' : 'bg-orange-50',
-            iconColor: completionPct === 100 ? 'text-[#1D9E8B]' : 'text-[#E8501C]',
-            valueColor: completionPct === 100 ? 'text-[#1D9E8B]' : 'text-[#E8501C]',
+            strip: 'stat-strip-orange',
+            iconBg: completionPct === 100 ? 'bg-[#FFF3EF]' : 'bg-orange-50',
+            iconColor: completionPct === 100 ? 'text-[#E85A14]' : 'text-[#E8501C]',
+            valueColor: completionPct === 100 ? 'text-[#E85A14]' : 'text-[#E8501C]',
           },
         ].map((stat, i) => (
           <div
@@ -170,23 +170,23 @@ export default function JudgeDashboardPage() {
                 <Flag size={11} /> {flaggedCount} flagged
               </span>
             )}
-            <span className="text-xs font-bold text-[#1D9E8B]">{judgedCount}/{rows.length} judged</span>
+            <span className="text-xs font-bold text-[#E85A14]">{judgedCount}/{rows.length} judged</span>
           </div>
         </div>
-        <Progress value={completionPct} className="h-2 progress-teal" />
+        <Progress value={completionPct} className="h-2 progress-brand" />
       </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <Tabs value={filter} onValueChange={(v) => setFilter(v as FilterTab)}>
-          <TabsList className="bg-white border border-gray-100 h-9">
-            <TabsTrigger value="all" className="text-xs data-[state=active]:bg-[#1D9E8B] data-[state=active]:text-white">
+            <TabsList className="bg-white border border-gray-100 h-9">
+            <TabsTrigger value="all" className="text-xs data-[state=active]:bg-[#E85A14] data-[state=active]:text-white">
               All ({rows.length})
             </TabsTrigger>
             <TabsTrigger value="pending" className="text-xs data-[state=active]:bg-amber-500 data-[state=active]:text-white">
               Pending ({pendingCount})
             </TabsTrigger>
-            <TabsTrigger value="judged" className="text-xs data-[state=active]:bg-[#1D9E8B] data-[state=active]:text-white">
+            <TabsTrigger value="judged" className="text-xs data-[state=active]:bg-[#E85A14] data-[state=active]:text-white">
               Judged ({judgedCount})
             </TabsTrigger>
             {flaggedCount > 0 && (
@@ -231,7 +231,7 @@ export default function JudgeDashboardPage() {
               key={row.id}
               className={`bg-white rounded-xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden animate-fade-in-up ${
                 row.status === 'judged'
-                  ? 'border-[#9DCFC6]'
+                  ? 'border-[#FDBA74]'
                   : row.state.conflictFlagged
                   ? 'border-amber-200'
                   : 'border-gray-100'
@@ -240,9 +240,9 @@ export default function JudgeDashboardPage() {
             >
               {/* Top color bar */}
               <div className={`h-1.5 ${
-                row.status === 'judged' ? 'bg-[#1D9E8B]' :
+                row.status === 'judged' ? 'bg-[#C2410C]' :
                 row.state.conflictFlagged ? 'bg-amber-400' :
-                row.status === 'in_progress' ? 'bg-[#E8501C]' : 'bg-gray-100'
+                row.status === 'in_progress' ? 'bg-[#E85A14]' : 'bg-gray-100'
               }`} />
 
               <div className="p-4">
@@ -257,7 +257,7 @@ export default function JudgeDashboardPage() {
                         </Badge>
                       )}
                       {row.status === 'judged' ? (
-                        <Badge className="text-[10px] bg-[#E1F5EE] text-[#0F6E56] border border-[#B8DDD4]">
+                        <Badge className="text-[10px] bg-[#FFF3EF] text-[#C2410C] border border-orange-200">
                           <CheckCircle2 size={9} className="mr-1" />Judged
                         </Badge>
                       ) : row.status === 'in_progress' ? (
@@ -277,7 +277,7 @@ export default function JudgeDashboardPage() {
                   </div>
                   {row.weightedTotal !== null && (
                     <div className="text-right flex-shrink-0">
-                      <p className="text-xl font-bold text-[#1D9E8B]">{row.weightedTotal.toFixed(1)}</p>
+                      <p className="text-xl font-bold text-[#E85A14]">{row.weightedTotal.toFixed(1)}</p>
                       <p className="text-[10px] text-gray-400">/ {TOTAL_MAX_SCORE}</p>
                     </div>
                   )}
@@ -289,7 +289,7 @@ export default function JudgeDashboardPage() {
                     <div
                       key={c.key}
                       className={`h-1 flex-1 rounded-full ${
-                        row.state.scores[c.key] !== undefined ? 'bg-[#1D9E8B]' : 'bg-gray-100'
+                        row.state.scores[c.key] !== undefined ? 'bg-[#E85A14]' : 'bg-gray-100'
                       }`}
                       title={`${c.name}: ${row.state.scores[c.key] ?? '—'}`}
                     />
@@ -329,8 +329,8 @@ export default function JudgeDashboardPage() {
                         </Button>
                       </>
                     ) : (
-                      <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 rounded px-2 py-1">
-                        No PDF on file — ask the organiser to upload one.
+                      <span className="text-[10px] text-gray-600 bg-gray-50 border border-gray-100 rounded px-2 py-1">
+                        No PDF yet (optional). Add one from Organiser → Projects when ready.
                       </span>
                     )}
                     {row.project.video_url && (
@@ -352,10 +352,10 @@ export default function JudgeDashboardPage() {
                 <Link href={`/judge/score/${row.id}`}>
                   <Button
                     size="sm"
-                    className={`w-full gap-1.5 text-xs ${
+                    className={`w-full gap-1.5 text-xs transition-transform active:scale-[0.98] ${
                       row.status === 'judged'
-                        ? 'bg-[#E1F5EE] text-[#0F6E56] hover:bg-[#c8eee6]'
-                        : 'bg-[#1D9E8B] hover:bg-[#0F6E56] text-white'
+                        ? 'bg-[#FFF3EF] text-[#C2410C] hover:bg-[#FFE8DC] border border-orange-200'
+                        : 'bg-[#E85A14] hover:bg-[#C2410C] text-white'
                     }`}
                   >
                     {row.status === 'judged'

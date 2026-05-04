@@ -171,7 +171,7 @@ export default function LoginContent() {
           </Link>
           <div className="flex-1" />
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-[#1D9E8B] flex items-center justify-center">
+            <div className="w-6 h-6 rounded bg-[#E85A14] flex items-center justify-center">
               <span className="text-white text-[10px] font-bold">AJ</span>
             </div>
             <span className="text-white text-sm font-semibold">AISG Judging Portal</span>
@@ -181,13 +181,13 @@ export default function LoginContent() {
 
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
-            <div className={`px-6 py-5 border-b border-gray-100 ${isOrganiser ? 'bg-[#1A2B3C]' : 'bg-[#E1F5EE]'}`}>
+          <div className="auth-shell-animate bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
+            <div className={`px-6 py-5 border-b border-gray-100 ${isOrganiser ? 'bg-[#1A2B3C]' : 'bg-[#FFF3EF]'}`}>
               <Badge
                 className={`mb-2 text-xs font-medium ${
                   isOrganiser
                     ? 'bg-[#2A3F52] text-white border border-[#3D5669]'
-                    : 'bg-white text-[#0F6E56] border border-[#1D9E8B]'
+                    : 'bg-white text-[#C2410C] border border-[#E85A14]'
                 }`}
               >
                 {isOrganiser ? 'Organiser Portal' : 'Judge Portal'}
@@ -195,7 +195,7 @@ export default function LoginContent() {
               <h1 className={`text-xl font-bold ${isOrganiser ? 'text-white' : 'text-[#1A2B3C]'}`}>
                 {isOrganiser ? 'Organiser Login' : 'Judge Login'}
               </h1>
-              <p className={`text-sm mt-1 ${isOrganiser ? 'text-gray-300' : 'text-[#0F6E56]'}`}>
+              <p className={`text-sm mt-1 ${isOrganiser ? 'text-gray-300' : 'text-gray-600'}`}>
                 {isOrganiser
                   ? 'Sign in with a magic link or email and password. New here? Create an account first.'
                   : 'Magic link, password, or demo — your organiser must invite your email for full access.'}
@@ -223,8 +223,8 @@ export default function LoginContent() {
 
               {sent ? (
                 <div className="text-center py-4">
-                  <div className="w-14 h-14 rounded-full bg-[#E1F5EE] flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="text-[#1D9E8B]" size={28} />
+                  <div className="w-14 h-14 rounded-full bg-[#FFF3EF] flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="text-[#E85A14]" size={28} />
                   </div>
                   <h3 className="font-semibold text-[#1A2B3C] mb-1">Check your email</h3>
                   <p className="text-gray-500 text-sm">
@@ -232,7 +232,7 @@ export default function LoginContent() {
                   </p>
                   <Button
                     variant="outline"
-                    className="mt-4 w-full border-[#1D9E8B] text-[#1D9E8B] hover:bg-[#E1F5EE]"
+                    className="mt-4 w-full border-[#E85A14] text-[#E85A14] hover:bg-[#FFF3EF]"
                     onClick={() => setSent(false)}
                   >
                     Use a different email
@@ -289,7 +289,7 @@ export default function LoginContent() {
                         placeholder={isOrganiser ? 'organiser@example.com' : 'judge@example.com'}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-9 border-gray-200 focus-visible:ring-[#1D9E8B]"
+                        className="pl-9 border-gray-200 focus-visible:ring-[#E85A14]"
                         required />
                     </div>
                   </div>
@@ -307,7 +307,7 @@ export default function LoginContent() {
                           autoComplete="current-password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          className="pl-9 border-gray-200 focus-visible:ring-[#1D9E8B]"
+                          className="pl-9 border-gray-200 focus-visible:ring-[#E85A14]"
                           required={loginMethod === 'password'}
                         />
                       </div>
@@ -322,7 +322,7 @@ export default function LoginContent() {
                       !isSupabaseConfigured() ||
                       (loginMethod === 'password' && !password)
                     }
-                    className="w-full bg-[#1D9E8B] hover:bg-[#0F6E56] text-white gap-2"
+                    className="w-full bg-[#E85A14] hover:bg-[#C2410C] text-white gap-2"
                   >
                     {loading ? (
                       <>
@@ -346,7 +346,7 @@ export default function LoginContent() {
                     New user?{' '}
                     <Link
                       href={`/auth/sign-up?role=${isOrganiser ? 'organiser' : 'judge'}`}
-                      className="text-[#1D9E8B] font-medium hover:underline"
+                      className="text-[#E85A14] font-medium hover:underline"
                     >
                       Create an account
                     </Link>
@@ -366,7 +366,7 @@ export default function LoginContent() {
                     variant="outline"
                     disabled={demoLoading}
                     onClick={() => void handleDemoLogin()}
-                    className="w-full gap-2 border-dashed border-[#1D9E8B] text-[#1D9E8B] hover:bg-[#E1F5EE] text-sm"
+                    className="w-full gap-2 border-dashed border-[#E85A14] text-[#E85A14] hover:bg-[#FFF3EF] text-sm"
                   >
                     {demoLoading ? (
                       <>
@@ -381,7 +381,7 @@ export default function LoginContent() {
                   {!isOrganiser && (
                     <div className="mt-3 rounded-lg border border-gray-100 bg-gray-50 p-3">
                       <div className="flex items-center gap-2 mb-2">
-                        <Users size={14} className="text-[#1D9E8B]" />
+                        <Users size={14} className="text-[#E85A14]" />
                         <p className="text-xs font-semibold text-[#1A2B3C]">Demo judge accounts</p>
                       </div>
                       <p className="text-[10px] text-gray-500 mb-2">
@@ -408,7 +408,7 @@ export default function LoginContent() {
                                 }
                               })()
                             }}
-                            className="text-left bg-white border border-gray-200 rounded-md px-3 py-2 hover:border-[#1D9E8B] hover:bg-[#E1F5EE] transition-colors disabled:opacity-50"
+                            className="text-left bg-white border border-gray-200 rounded-md px-3 py-2 hover:border-[#E85A14] hover:bg-[#FFF3EF] transition-colors disabled:opacity-50"
                           >
                             <p className="text-xs font-semibold text-[#1A2B3C]">{j.name}</p>
                             <p className="text-[10px] text-gray-400">{j.email}</p>
@@ -422,9 +422,9 @@ export default function LoginContent() {
 
               <p className="text-center text-xs text-gray-400 mt-4">
                 Powered by{' '}
-                <span className="text-[#1D9E8B]">AI Singapore</span> ·{' '}
-                <span className="text-[#1D9E8B]">ASEAN Foundation</span> ·{' '}
-                <span className="text-[#1D9E8B]">Google.org</span>
+                <span className="text-[#E85A14]">AI Singapore</span> ·{' '}
+                <span className="text-[#E85A14]">ASEAN Foundation</span> ·{' '}
+                <span className="text-[#E85A14]">Google.org</span>
               </p>
             </div>
           </div>
@@ -433,14 +433,14 @@ export default function LoginContent() {
             {isOrganiser ? (
               <>
                 Are you a judge?{' '}
-                <Link href="/auth/login?role=judge" className="text-[#1D9E8B] hover:underline">
+                <Link href="/auth/login?role=judge" className="text-[#E85A14] hover:underline">
                   Judge login →
                 </Link>
               </>
             ) : (
               <>
                 Are you an organiser?{' '}
-                <Link href="/auth/login?role=organiser" className="text-[#1D9E8B] hover:underline">
+                <Link href="/auth/login?role=organiser" className="text-[#E85A14] hover:underline">
                   Organiser login →
                 </Link>
               </>

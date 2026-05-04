@@ -406,7 +406,7 @@ export default function OrganiserProjectsPage() {
         <div>
           <h2 className="text-sm font-semibold text-[#1A2B3C]">Submissions</h2>
           <p className="text-sm text-gray-500">
-            {projects.length} team{projects.length !== 1 ? 's' : ''} in this competition. Add one with the form (upload a PDF from your computer) or import a spreadsheet.
+            {projects.length} team{projects.length !== 1 ? 's' : ''} in this competition. Add a team with the form, or import a spreadsheet. PDF upload and video links are optional for every project.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -469,7 +469,7 @@ export default function OrganiserProjectsPage() {
                 resetAddForm()
                 setAddOpen(true)
               }}
-              className="gap-1.5 text-xs bg-[#1D9E8B] hover:bg-[#0F6E56] text-white"
+              className="gap-1.5 text-xs bg-[#E85A14] hover:bg-[#C2410C] text-white transition-transform active:scale-[0.98]"
             >
               <Plus size={13} /> Add Project
             </Button>
@@ -477,7 +477,7 @@ export default function OrganiserProjectsPage() {
               <DialogHeader>
                 <DialogTitle className="text-[#1A2B3C] text-lg">Add a new team project</DialogTitle>
                 <DialogDescription className="text-gray-600 text-sm leading-relaxed">
-                  Fill in the team name and country (required). Upload their written proposal as a PDF, or skip if you will add a link later via CSV. Judges use these materials when scoring.
+                  Fill in the team name and country (required). PDF and video link are optional — add either, both, or neither; you can always update later or use CSV import for links.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 pt-4 max-h-[min(70vh,32rem)] overflow-y-auto pr-1">
@@ -515,9 +515,12 @@ export default function OrganiserProjectsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-[#1A2B3C]">Written proposal (PDF)</Label>
+                  <Label className="text-sm font-medium text-[#1A2B3C]">
+                    Written proposal (PDF){' '}
+                    <span className="text-gray-400 font-normal">(optional)</span>
+                  </Label>
                   <p className="text-xs text-gray-500 -mt-1">
-                    Optional but recommended. PDF only, up to {MAX_PDF_BYTES / (1024 * 1024)} MB. Drag the file here or click to browse.
+                    PDF only, up to {MAX_PDF_BYTES / (1024 * 1024)} MB. Drag the file here or click to browse.
                   </p>
                   <input
                     ref={pdfInputRef}
@@ -563,13 +566,13 @@ export default function OrganiserProjectsPage() {
                     className={cn(
                       'rounded-lg border-2 border-dashed px-4 py-8 text-center cursor-pointer transition-colors min-h-[7rem] flex flex-col items-center justify-center gap-2',
                       pdfDragging
-                        ? 'border-[#1D9E8B] bg-[#E1F5EE] shadow-[inset_0_0_0_2px_rgba(29,158,139,0.15)]'
-                        : 'border-gray-300 bg-[#F4F6F8] hover:border-[#1D9E8B] hover:bg-[#E8F5F2]'
+                        ? 'border-[#E85A14] bg-[#FFF3EF] shadow-[inset_0_0_0_2px_rgba(232,90,20,0.18)]'
+                        : 'border-gray-300 bg-[#F4F6F8] hover:border-[#E85A14] hover:bg-[#FFF8F4]'
                     )}
                   >
                     {pdfFile ? (
                       <>
-                        <FileText className="text-[#1D9E8B]" size={28} aria-hidden />
+                        <FileText className="text-[#E85A14]" size={28} aria-hidden />
                         <p className="text-sm font-medium text-[#1A2B3C] break-all max-w-full px-2">{pdfFile.name}</p>
                         <p className="text-xs text-gray-500">
                           {pdfFile.size >= 1024 * 1024
@@ -628,7 +631,7 @@ export default function OrganiserProjectsPage() {
                   </Button>
                   <Button
                     size="sm"
-                    className="h-10 bg-[#1D9E8B] hover:bg-[#0F6E56] text-white min-w-[8rem]"
+                    className="h-10 bg-[#E85A14] hover:bg-[#C2410C] text-white min-w-[8rem] transition-transform active:scale-[0.98]"
                     disabled={addSubmitting}
                     onClick={() => void handleAddProject()}
                   >
@@ -650,7 +653,7 @@ export default function OrganiserProjectsPage() {
               <DialogHeader>
                 <DialogTitle className="text-[#1A2B3C] text-lg">Edit project</DialogTitle>
                 <DialogDescription className="text-gray-600 text-sm leading-relaxed">
-                  Update team details, video link, or replace the PDF. Changes apply everywhere judges and results use this project.
+                  Update team details. PDF and video link stay optional — clear the video field or replace the PDF anytime.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 pt-4 max-h-[min(70vh,32rem)] overflow-y-auto pr-1">
@@ -684,11 +687,14 @@ export default function OrganiserProjectsPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-[#1A2B3C]">Written proposal (PDF)</Label>
+                  <Label className="text-sm font-medium text-[#1A2B3C]">
+                    Written proposal (PDF){' '}
+                    <span className="text-gray-400 font-normal">(optional)</span>
+                  </Label>
                   <p className="text-xs text-gray-500 -mt-1">
                     {editId && projects.find((p) => p.id === editId)?.pdf_url && !editPdfFile
                       ? 'A PDF is already attached. Upload a new file below to replace it.'
-                      : 'Optional. Upload to attach or replace the PDF.'}
+                      : 'Upload to attach or replace the PDF, or leave as-is.'}
                   </p>
                   <input
                     ref={editPdfInputRef}
@@ -734,13 +740,13 @@ export default function OrganiserProjectsPage() {
                     className={cn(
                       'rounded-lg border-2 border-dashed px-4 py-6 text-center cursor-pointer transition-colors min-h-[5rem] flex flex-col items-center justify-center gap-2',
                       editPdfDragging
-                        ? 'border-[#1D9E8B] bg-[#E1F5EE] shadow-[inset_0_0_0_2px_rgba(29,158,139,0.15)]'
-                        : 'border-gray-300 bg-[#F4F6F8] hover:border-[#1D9E8B] hover:bg-[#E8F5F2]'
+                        ? 'border-[#E85A14] bg-[#FFF3EF] shadow-[inset_0_0_0_2px_rgba(232,90,20,0.18)]'
+                        : 'border-gray-300 bg-[#F4F6F8] hover:border-[#E85A14] hover:bg-[#FFF8F4]'
                     )}
                   >
                     {editPdfFile ? (
                       <>
-                        <FileText className="text-[#1D9E8B]" size={24} aria-hidden />
+                        <FileText className="text-[#E85A14]" size={24} aria-hidden />
                         <p className="text-sm font-medium text-[#1A2B3C] break-all max-w-full px-2">{editPdfFile.name}</p>
                         <Button
                           type="button"
@@ -781,7 +787,7 @@ export default function OrganiserProjectsPage() {
                   </Button>
                   <Button
                     size="sm"
-                    className="h-10 bg-[#1D9E8B] hover:bg-[#0F6E56] text-white min-w-[8rem]"
+                    className="h-10 bg-[#E85A14] hover:bg-[#C2410C] text-white min-w-[8rem] transition-transform active:scale-[0.98]"
                     disabled={editSubmitting}
                     onClick={() => void handleSaveEdit()}
                   >
@@ -795,17 +801,17 @@ export default function OrganiserProjectsPage() {
       </div>
 
       {/* Import help + sample files */}
-      <div className="bg-[#E1F5EE] rounded-lg p-4 text-sm text-[#0F6E56] space-y-2">
+      <div className="bg-[#FFF3EF] rounded-lg p-4 text-sm text-[#1A2B3C] space-y-2 border border-orange-100">
         <p>
           <strong>Bulk import:</strong> use columns{' '}
-          <code className="bg-white px-1.5 py-0.5 rounded text-xs font-mono border border-[#B8DDD4] shadow-sm">
+          <code className="bg-white px-1.5 py-0.5 rounded text-xs font-mono border border-orange-200 shadow-sm">
             project_name, country, pdf_url, video_url
           </code>
-          . Country must match the ASEAN list (e.g. Singapore). Row 1 in Excel should be the header row.
+          . Country must match the ASEAN list (e.g. Singapore). Row 1 in Excel should be the header row. PDF and video columns may be left empty.
         </p>
-        <p className="text-xs text-[#0B5C4A]">
-          For <code className="bg-white px-1 rounded border border-[#B8DDD4]">pdf_url</code>, use a public link or a path under{' '}
-          <code className="bg-white px-1 rounded border border-[#B8DDD4]">/samples/projects/</code> (see generated demo PDFs) so judges can open files on the same site.
+        <p className="text-xs text-gray-700">
+          For <code className="bg-white px-1 rounded border border-orange-200">pdf_url</code>, use a public link or a path under{' '}
+          <code className="bg-white px-1 rounded border border-orange-200">/samples/projects/</code> (see generated demo PDFs) so judges can open files on the same site.
         </p>
         <div className="flex flex-wrap gap-2 pt-1">
           <a
@@ -813,7 +819,7 @@ export default function OrganiserProjectsPage() {
             download
             className={cn(
               buttonVariants({ variant: 'outline', size: 'sm' }),
-              'h-8 border-[#B8DDD4] bg-white text-xs no-underline'
+              'h-8 border-orange-200 bg-white text-xs no-underline'
             )}
           >
             <Download size={12} className="mr-1.5" /> Sample CSV
@@ -823,7 +829,7 @@ export default function OrganiserProjectsPage() {
             download
             className={cn(
               buttonVariants({ variant: 'outline', size: 'sm' }),
-              'h-8 border-[#B8DDD4] bg-white text-xs no-underline'
+              'h-8 border-orange-200 bg-white text-xs no-underline'
             )}
           >
             <Download size={12} className="mr-1.5" /> Sample Excel
@@ -833,7 +839,7 @@ export default function OrganiserProjectsPage() {
             download
             className={cn(
               buttonVariants({ variant: 'outline', size: 'sm' }),
-              'h-8 border-[#B8DDD4] bg-white text-xs no-underline'
+              'h-8 border-orange-200 bg-white text-xs no-underline'
             )}
           >
             <FileText size={12} className="mr-1.5" /> Sample PDF (proj-001)
@@ -880,13 +886,13 @@ export default function OrganiserProjectsPage() {
                       {project.pdf_url ? (
                         <PdfOpenLink
                           href={project.pdf_url}
-                          className="text-[#1D9E8B] hover:underline flex items-center gap-1 text-xs no-underline"
+                          className="text-[#E85A14] hover:underline flex items-center gap-1 text-xs no-underline"
                         >
                           <FileText size={11} /> PDF
                         </PdfOpenLink>
                       ) : <span className="text-gray-300 text-xs">No PDF</span>}
                       {project.video_url ? (
-                        <a href={project.video_url} target="_blank" rel="noreferrer" className="text-[#1D9E8B] hover:underline flex items-center gap-1 text-xs">
+                        <a href={project.video_url} target="_blank" rel="noreferrer" className="text-[#E85A14] hover:underline flex items-center gap-1 text-xs">
                           <Video size={11} /> Video
                         </a>
                       ) : <span className="text-gray-300 text-xs">No video</span>}
@@ -913,7 +919,7 @@ export default function OrganiserProjectsPage() {
                       <button
                         type="button"
                         title="Edit project"
-                        className="w-7 h-7 rounded hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-[#1D9E8B]"
+                        className="w-7 h-7 rounded hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-[#E85A14]"
                         onClick={() => openEdit(project.id)}
                       >
                         <Edit size={13} />
