@@ -119,30 +119,43 @@ export default function JudgeDashboardPage() {
         {[
           {
             label: 'Total Assigned', value: rows.length,
-            icon: <FileText size={16} />, color: 'text-[#1D9E8B]',
+            icon: <FileText size={18} />,
+            strip: 'stat-strip-blue', iconBg: 'bg-blue-50', iconColor: 'text-[#3A7BD5]',
+            valueColor: 'text-[#1A2B3C]',
           },
           {
             label: 'Judged', value: judgedCount,
-            icon: <CheckCheck size={16} />,
-            color: judgedCount === rows.length ? 'text-[#1D9E8B]' : 'text-amber-500',
+            icon: <CheckCheck size={18} />,
+            strip: 'stat-strip-teal', iconBg: 'bg-[#E1F5EE]', iconColor: 'text-[#1D9E8B]',
+            valueColor: judgedCount === rows.length ? 'text-[#1D9E8B]' : 'text-[#1A2B3C]',
           },
           {
             label: 'Remaining', value: pendingCount,
-            icon: <Clock size={16} />,
-            color: pendingCount > 0 ? 'text-amber-500' : 'text-[#1D9E8B]',
+            icon: <Clock size={18} />,
+            strip: pendingCount > 0 ? 'stat-strip-amber' : 'stat-strip-teal',
+            iconBg: pendingCount > 0 ? 'bg-amber-50' : 'bg-[#E1F5EE]',
+            iconColor: pendingCount > 0 ? 'text-amber-600' : 'text-[#1D9E8B]',
+            valueColor: pendingCount > 0 ? 'text-amber-600' : 'text-[#1D9E8B]',
           },
           {
             label: 'Completion', value: `${completionPct.toFixed(0)}%`,
-            icon: <CheckCircle2 size={16} />,
-            color: completionPct === 100 ? 'text-[#1D9E8B]' : 'text-[#1A2B3C]',
+            icon: <CheckCircle2 size={18} />,
+            strip: completionPct === 100 ? 'stat-strip-teal' : 'stat-strip-orange',
+            iconBg: completionPct === 100 ? 'bg-[#E1F5EE]' : 'bg-orange-50',
+            iconColor: completionPct === 100 ? 'text-[#1D9E8B]' : 'text-[#E8501C]',
+            valueColor: completionPct === 100 ? 'text-[#1D9E8B]' : 'text-[#E8501C]',
           },
-        ].map((stat) => (
-          <div key={stat.label} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-            <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1.5">
-              <span className={stat.color}>{stat.icon}</span>
-              {stat.label}
+        ].map((stat, i) => (
+          <div
+            key={stat.label}
+            className={`${stat.strip} rounded-xl border border-gray-100 p-4 shadow-sm hover-lift animate-fade-in-up`}
+            style={{ animationDelay: `${i * 80}ms` }}
+          >
+            <div className={`w-9 h-9 rounded-lg ${stat.iconBg} flex items-center justify-center mb-3`}>
+              <span className={stat.iconColor}>{stat.icon}</span>
             </div>
-            <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+            <p className={`text-2xl font-bold ${stat.valueColor}`}>{stat.value}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{stat.label}</p>
           </div>
         ))}
       </div>
@@ -213,22 +226,23 @@ export default function JudgeDashboardPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((row) => (
+          {filtered.map((row, cardIdx) => (
             <div
               key={row.id}
-              className={`bg-white rounded-xl border shadow-sm hover:shadow-md transition-all overflow-hidden ${
+              className={`bg-white rounded-xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden animate-fade-in-up ${
                 row.status === 'judged'
                   ? 'border-[#9DCFC6]'
                   : row.state.conflictFlagged
                   ? 'border-amber-200'
                   : 'border-gray-100'
               }`}
+              style={{ animationDelay: `${cardIdx * 60}ms` }}
             >
               {/* Top color bar */}
-              <div className={`h-1 ${
+              <div className={`h-1.5 ${
                 row.status === 'judged' ? 'bg-[#1D9E8B]' :
                 row.state.conflictFlagged ? 'bg-amber-400' :
-                row.status === 'in_progress' ? 'bg-amber-300' : 'bg-gray-100'
+                row.status === 'in_progress' ? 'bg-[#E8501C]' : 'bg-gray-100'
               }`} />
 
               <div className="p-4">

@@ -166,25 +166,28 @@ export default function OrganiserDashboardPage() {
       {/* Overview stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Projects', value: projects.length, icon: <FileText size={16} />, href: '/organiser/projects' },
-          { label: 'Active Judges', value: judges.filter((j) => j.is_active).length, icon: <Users size={16} />, href: '/organiser/judges' },
-          { label: 'Scores Submitted', value: submittedAssignments, icon: <CheckCheck size={16} />, href: '/organiser/results' },
-          { label: 'Pending', value: totalAssignments - submittedAssignments, icon: <Clock size={16} />, href: '/organiser/assignments' },
-        ].map((stat) => (
+          { label: 'Total Projects', value: projects.length, icon: <FileText size={18} />, href: '/organiser/projects', strip: 'stat-strip-orange', iconBg: 'bg-orange-50', iconColor: 'text-[#E8501C]' },
+          { label: 'Active Judges', value: judges.filter((j) => j.is_active).length, icon: <Users size={18} />, href: '/organiser/judges', strip: 'stat-strip-blue', iconBg: 'bg-blue-50', iconColor: 'text-[#3A7BD5]' },
+          { label: 'Scores Submitted', value: submittedAssignments, icon: <CheckCheck size={18} />, href: '/organiser/results', strip: 'stat-strip-teal', iconBg: 'bg-[#E1F5EE]', iconColor: 'text-[#1D9E8B]' },
+          { label: 'Pending', value: totalAssignments - submittedAssignments, icon: <Clock size={18} />, href: '/organiser/assignments', strip: 'stat-strip-amber', iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
+        ].map((stat, i) => (
           <Link key={stat.label} href={stat.href}>
-            <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-all cursor-pointer">
-              <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-1.5">
-                <span className="text-[#1D9E8B]">{stat.icon}</span>
-                {stat.label}
+            <div
+              className={`${stat.strip} rounded-xl border border-gray-100 p-4 shadow-sm hover-lift cursor-pointer animate-fade-in-up`}
+              style={{ animationDelay: `${i * 80}ms` }}
+            >
+              <div className={`w-9 h-9 rounded-lg ${stat.iconBg} flex items-center justify-center mb-3`}>
+                <span className={stat.iconColor}>{stat.icon}</span>
               </div>
               <p className="text-2xl font-bold text-[#1A2B3C]">{stat.value}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{stat.label}</p>
             </div>
           </Link>
         ))}
       </div>
 
       {/* Overall progress */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+      <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm animate-fade-in-up" style={{ animationDelay: '320ms' }}>
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-sm font-semibold text-[#1A2B3C]">Overall Judging Progress</h2>
           <span className="text-xs font-bold text-[#1D9E8B]">{overallPct.toFixed(0)}% complete</span>
@@ -205,8 +208,8 @@ export default function OrganiserDashboardPage() {
             </Link>
           </div>
           <div className="divide-y divide-gray-50">
-            {judgeProgress.map(({ judge, total, done, pct, lastActive }) => (
-              <div key={judge.id} className="px-5 py-3.5 flex items-center gap-3">
+            {judgeProgress.map(({ judge, total, done, pct, lastActive }, jIdx) => (
+              <div key={judge.id} className="px-5 py-3.5 flex items-center gap-3 tr-animate" style={{ animationDelay: `${400 + jIdx * 60}ms` }}>
                 <div className="w-8 h-8 rounded-full bg-[#D4EDE8] border border-[#9DCFC6] flex items-center justify-center text-[#0F6E56] text-xs font-bold flex-shrink-0">
                   {judge.name.charAt(0)}
                 </div>
@@ -259,9 +262,9 @@ export default function OrganiserDashboardPage() {
           ) : (
             <div className="divide-y divide-gray-50">
               {topProjects.map(({ project, avg, scoredCount }, i) => (
-                <div key={project.id} className="px-5 py-3.5 flex items-center gap-3">
+                <div key={project.id} className="px-5 py-3.5 flex items-center gap-3 tr-animate" style={{ animationDelay: `${400 + i * 70}ms` }}>
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                    i === 0 ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
+                    i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-gray-100 text-gray-500' : i === 2 ? 'bg-orange-50 text-orange-500' : 'bg-gray-50 text-gray-400'
                   }`}>
                     {i + 1}
                   </div>

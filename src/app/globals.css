@@ -102,4 +102,84 @@
 /* Progress bar overrides */
 .progress-teal [data-slot="progress-indicator"] {
   background-color: var(--color-primary);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* All progress indicators animate smoothly */
+[data-slot="progress-indicator"] {
+  transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Entry animations ──────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.85); }
+  70%  { transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in-up    { animation: fadeInUp    0.4s ease-out both; }
+.animate-fade-in-left  { animation: fadeInLeft  0.35s ease-out both; }
+.animate-fade-in-scale { animation: fadeInScale 0.35s ease-out both; }
+.animate-slide-down    { animation: slideDown   0.3s ease-out both; }
+.animate-pop-in        { animation: popIn       0.45s ease-out both; }
+
+/* ─── Coloured stat card strips (inspired by AIRA brand) ── */
+.stat-strip-orange {
+  border-left: 4px solid #E8501C;
+  background: linear-gradient(135deg, #FFF3EF 0%, #fff 60%);
+}
+.stat-strip-teal {
+  border-left: 4px solid #1D9E8B;
+  background: linear-gradient(135deg, #E6FAF6 0%, #fff 60%);
+}
+.stat-strip-blue {
+  border-left: 4px solid #3A7BD5;
+  background: linear-gradient(135deg, #EEF4FF 0%, #fff 60%);
+}
+.stat-strip-amber {
+  border-left: 4px solid #F5A623;
+  background: linear-gradient(135deg, #FFFBE8 0%, #fff 60%);
+}
+.stat-strip-purple {
+  border-left: 4px solid #7C5CBF;
+  background: linear-gradient(135deg, #F4F0FF 0%, #fff 60%);
+}
+.stat-strip-navy {
+  border-left: 4px solid #1A2B3C;
+  background: linear-gradient(135deg, #EEF1F5 0%, #fff 60%);
+}
+
+/* ─── Hover lift ─────────────────────────────────────────── */
+.hover-lift {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.09);
+}
+
+/* ─── Table row animations ───────────────────────────────── */
+.tr-animate {
+  animation: fadeInLeft 0.3s ease-out both;
+}
+
+/* ─── Vote bar transition ────────────────────────────────── */
+.vote-bar-fill {
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }

@@ -149,10 +149,10 @@ export default function PeoplesChoicePage() {
               const medals = ['🥈', '🥇', '🥉']
               if (!project) return <div key={i} className="flex-1" />
               return (
-                <div key={project.id} className="flex-1 text-center">
+                <div key={project.id} className="flex-1 text-center animate-pop-in" style={{ animationDelay: `${[100, 0, 200][i]}ms` }}>
                   <p className="text-xs font-semibold text-[#1A2B3C] mb-1 truncate">{project.name}</p>
                   <CountryBadge country={project.country} className="mb-1" />
-                  <div className={`${heights[i]} ${colors[podiumIdx]} rounded-t-lg flex flex-col items-center justify-end pb-2 pt-3`}>
+                  <div className={`${heights[i]} ${colors[podiumIdx]} rounded-t-lg flex flex-col items-center justify-end pb-2 pt-3 transition-all`}>
                     <span className="text-xl mb-1">{medals[podiumIdx]}</span>
                     <span className="font-bold text-sm">{votes[project.id] ?? 0}</span>
                     <span className="text-[10px] text-gray-600">votes</span>
@@ -209,7 +209,7 @@ export default function PeoplesChoicePage() {
 
         {/* Project cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {sorted.map((project) => {
+          {sorted.map((project, cardIdx) => {
             const projectVotes = votes[project.id] ?? 0
             const isVoted = myVotes.has(project.id)
             const pct = maxVotes > 0 ? (projectVotes / maxVotes) * 100 : 0
@@ -219,11 +219,12 @@ export default function PeoplesChoicePage() {
             return (
               <div
                 key={project.id}
-                className={`bg-white rounded-xl border shadow-sm hover:shadow-md transition-all overflow-hidden ${
+                className={`bg-white rounded-xl border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden animate-fade-in-up ${
                   isVoted ? 'border-[#1D9E8B]' : 'border-gray-100'
                 }`}
+                style={{ animationDelay: `${cardIdx * 55}ms` }}
               >
-                {isVoted && <div className="h-0.5 bg-[#1D9E8B]" />}
+                {isVoted && <div className="h-1.5 bg-[#1D9E8B]" />}
                 <div className="p-4">
                   <div className="flex items-start gap-3 mb-3">
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
@@ -260,9 +261,9 @@ export default function PeoplesChoicePage() {
                   <div className="mb-3">
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-gray-500">{projectVotes.toLocaleString()} votes</span>
-                      <span className="text-gray-400">{pct.toFixed(0)}% of top</span>
+                      <span className={`font-medium ${isVoted ? 'text-[#1D9E8B]' : 'text-gray-400'}`}>{pct.toFixed(0)}%</span>
                     </div>
-                    <Progress value={pct} className={`h-1.5 ${isVoted ? 'progress-teal' : ''}`} />
+                    <Progress value={pct} className={`h-2 ${isVoted ? 'progress-teal' : ''}`} />
                   </div>
 
                   <Button

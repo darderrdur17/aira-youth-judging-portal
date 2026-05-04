@@ -128,7 +128,7 @@ export default function CalibrationPage() {
       {/* Judge profile cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {judgeProfiles.map((jp, i) => (
-          <div key={jp.judge.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+          <div key={jp.judge.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover-lift animate-fade-in-up" style={{ animationDelay: `${i * 100}ms` }}>
             <div className="flex items-center gap-2 mb-3">
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
@@ -228,7 +228,11 @@ export default function CalibrationPage() {
                 key={jp.judge.id}
                 dataKey={jp.judge.name.split(' ')[1]}
                 fill={JUDGE_COLORS[i % JUDGE_COLORS.length]}
-                radius={[2, 2, 0, 0]}
+                radius={[3, 3, 0, 0]}
+                isAnimationActive
+                animationBegin={i * 120}
+                animationDuration={900}
+                animationEasing="ease-out"
               />
             ))}
           </BarChart>
@@ -258,8 +262,8 @@ export default function CalibrationPage() {
                 </tr>
               </thead>
               <tbody>
-                {projectComparisons.map((r) => (
-                  <tr key={r.project.id} className="border-b border-gray-50 hover:bg-gray-50">
+                {projectComparisons.map((r, ri) => (
+                  <tr key={r.project.id} className="border-b border-gray-50 hover:bg-gray-50 tr-animate" style={{ animationDelay: `${ri * 35}ms` }}>
                     <td className="py-2 pr-3 font-medium text-[#1A2B3C]">{r.project.name}</td>
                     <td className="py-2"><CountryBadge country={r.project.country} /></td>
                     {judgeProfiles.map((jp) => {

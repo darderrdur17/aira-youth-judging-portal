@@ -185,9 +185,19 @@ export default function OrganiserResultsPage() {
                 formatter={(v) => [`${v ?? 0} / ${TOTAL_MAX_SCORE}`, 'Avg Score']}
                 contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #E2E6EA' }}
               />
-              <Bar dataKey="score" radius={[4, 4, 0, 0]}>
+              <Bar
+                dataKey="score"
+                radius={[4, 4, 0, 0]}
+                isAnimationActive
+                animationBegin={100}
+                animationDuration={1000}
+                animationEasing="ease-out"
+              >
                 {chartData.map((_, i) => (
-                  <Cell key={i} fill={i === 0 ? '#F5A623' : '#1D9E8B'} />
+                  <Cell
+                    key={i}
+                    fill={i === 0 ? '#F5A623' : i === 1 ? '#E8501C' : i === 2 ? '#3A7BD5' : '#1D9E8B'}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -211,21 +221,22 @@ export default function OrganiserResultsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {results.map((r) => {
+            {results.map((r, rowIdx) => {
               const isExp = expanded.has(r.project.id)
               return (
                 <>
                   <TableRow
                     key={r.project.id}
-                    className={`hover:bg-gray-50 text-sm cursor-pointer ${r.avg === null ? 'opacity-50' : ''}`}
+                    className={`hover:bg-gray-50 text-sm cursor-pointer tr-animate ${r.avg === null ? 'opacity-50' : ''}`}
+                    style={{ animationDelay: `${rowIdx * 40}ms` }}
                     onClick={() => r.avg !== null && toggleExpand(r.project.id)}
                   >
                     <TableCell>
                       {r.rank !== null ? (
                         <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                          r.rank === 1 ? 'bg-amber-100 text-amber-700' :
-                          r.rank === 2 ? 'bg-gray-100 text-gray-600' :
-                          r.rank === 3 ? 'bg-orange-50 text-orange-600' :
+                          r.rank === 1 ? 'bg-amber-100 text-amber-700 ring-2 ring-amber-300' :
+                          r.rank === 2 ? 'bg-gray-100 text-gray-600 ring-2 ring-gray-300' :
+                          r.rank === 3 ? 'bg-orange-50 text-orange-600 ring-2 ring-orange-200' :
                           'bg-gray-50 text-gray-500'
                         }`}>
                           {r.rank <= 3 ? <Trophy size={12} /> : r.rank}
