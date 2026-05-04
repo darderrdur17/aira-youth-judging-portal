@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -46,6 +46,16 @@ import { cn } from '@/lib/utils'
 import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 import { parseCsvText } from '@/lib/csv'
 import { PdfOpenLink } from '@/components/shared/PdfOpenLink'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from 'recharts'
 
 const MAX_PDF_BYTES = 20 * 1024 * 1024 // 20 MB — typical cap for browser demo; use cloud storage in production
 
@@ -186,6 +196,20 @@ export default function OrganiserProjectsPage() {
     const q = search.toLowerCase()
     return p.name.toLowerCase().includes(q) || p.country.toLowerCase().includes(q)
   })
+
+  const pastelBar = ['#93C5FD', '#6EE7B7', '#FDE68A', '#FCA5A5', '#C4B5FD', '#FDA4AF', '#67E8F9', '#BEF264', '#FED7AA', '#A5B4FC', '#F0ABFC']
+
+  const countrySubmissionCounts = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const p of projects) {
+      map.set(p.country, (map.get(p.country) ?? 0) + 1)
+    }
+    return ASEAN_COUNTRIES.filter((c) => (map.get(c) ?? 0) > 0)
+      .map((c) => ({ name: c, count: map.get(c)! }))
+      .sort((a, b) => b.count - a.count)
+  }, [projects])
+
+  const totalSubmissions = projects.length
 
   const getAssignmentCount = (projectId: string) =>
     assignments.filter((a) => a.project_id === projectId).length
@@ -343,10 +367,44 @@ export default function OrganiserProjectsPage() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* Submissions dashboard (AIRA-style) */}
+      <div>
+        <h1 className="text-xl font-bold text-[#1A2B3C]">Submissions review</h1>
+        <p className="mt-0.5 text-sm text-gray-500">
+          Manage proposals, materials, and reviewer assignments — same lane as the AIRA &quot;Submissions Review&quot; interface.
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-orange-100 bg-[#FFE5D4] p-6 shadow-sm">
+        <p className="text-xs font-medium text-gray-700">Total submissions received</p>
+        <p className="mt-2 text-4xl font-bold text-[#1A2B3C]">{totalSubmissions}</p>
+      </div>
+
+      {countrySubmissionCounts.length > 0 && (
+        <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+          <h2 className="mb-4 text-sm font-semibold text-[#1A2B3C]">Submissions received by country</h2>
+          <div className="h-[260px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={countrySubmissionCounts} margin={{ top: 8, right: 8, left: 0, bottom: 56 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#6B7280' }} angle={-40} textAnchor="end" height={70} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#6B7280' }} />
+                <Tooltip />
+                <Bar dataKey="count" radius={[4, 4, 0, 0]} isAnimationActive animationDuration={800}>
+                  {countrySubmissionCounts.map((_, i) => (
+                    <Cell key={i} fill={pastelBar[i % pastelBar.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* Header / toolbar */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-bold text-[#1A2B3C]">Projects</h1>
+          <h2 className="text-sm font-semibold text-[#1A2B3C]">Submissions</h2>
           <p className="text-sm text-gray-500">
             {projects.length} team{projects.length !== 1 ? 's' : ''} in this competition. Add one with the form (upload a PDF from your computer) or import a spreadsheet.
           </p>

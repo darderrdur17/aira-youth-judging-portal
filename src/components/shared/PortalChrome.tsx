@@ -9,6 +9,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -18,12 +19,7 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/client'
 import {
   LayoutDashboard,
   FolderKanban,
-  Users,
-  Link2,
-  BarChart3,
-  SlidersHorizontal,
-  ScrollText,
-  Settings,
+  CalendarDays,
   ChevronDown,
   LogOut,
   Bell,
@@ -109,15 +105,17 @@ export function PortalChrome({
     }
   }
 
-  const organiserLinks: { href: string; label: string; icon: ComponentType<{ className?: string; size?: number }> }[] = [
-    { href: '/organiser/dashboard', label: 'Summary of Registrations', icon: LayoutDashboard },
-    { href: '/organiser/judges', label: 'Judges', icon: Users },
-    { href: '/organiser/assignments', label: 'Assignments', icon: Link2 },
-    { href: '/organiser/projects', label: 'Submissions Review', icon: FolderKanban },
-    { href: '/organiser/results', label: 'Results', icon: BarChart3 },
-    { href: '/organiser/calibration', label: 'Score Calibration', icon: SlidersHorizontal },
-    { href: '/organiser/audit', label: 'Audit Log', icon: ScrollText },
-    { href: '/organiser/setup', label: 'Setup', icon: Settings },
+  type OrganiserNav = {
+    href: string
+    label: string
+    icon: ComponentType<{ className?: string; size?: number }>
+    match: 'exact' | 'prefix'
+  }
+
+  const organiserLinks: OrganiserNav[] = [
+    { href: '/organiser/dashboard', label: 'Summary of Registrations', icon: LayoutDashboard, match: 'exact' },
+    { href: '/organiser/consultations', label: 'Open Consultation Sessions', icon: CalendarDays, match: 'prefix' },
+    { href: '/organiser/projects', label: 'Submissions Review', icon: FolderKanban, match: 'prefix' },
   ]
 
   const judgeLinks: { href: string; label: string; icon: ComponentType<{ className?: string; size?: number }> }[] = [
@@ -183,8 +181,31 @@ export function PortalChrome({
           <DropdownMenuContent className="w-56" align="start" side="bottom">
             <DropdownMenuItem onSelect={() => router.push('/')}>Home</DropdownMenuItem>
             {isOrganiser && (
-              <DropdownMenuItem onSelect={() => router.push('/organiser/setup')}>Competition settings</DropdownMenuItem>
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">
+                  Judging portal
+                </DropdownMenuLabel>
+                <DropdownMenuItem onSelect={() => router.push('/organiser/judges')}>Judges</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/organiser/assignments')}>Assignments</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/organiser/results')}>Results</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/organiser/calibration')}>Score calibration</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/organiser/audit')}>Audit log</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/organiser/setup')}>Setup</DropdownMenuItem>
+              </>
             )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => {
+                window.open(
+                  'https://airtable.com/appFi6PKtkrlGlVlL/pagQ4SiVjwcCZdOcO',
+                  '_blank',
+                  'noopener,noreferrer'
+                )
+              }}
+            >
+              Open AIRA base (Airtable)…
+            </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() => {
                 window.open('/vote', '_blank', 'noopener,noreferrer')
@@ -198,9 +219,18 @@ export function PortalChrome({
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-4">
         {links.map((link) => {
-          const active =
-            pathname === link.href ||
-            (!isOrganiser && link.href === '/judge/dashboard' && pathname.startsWith('/judge/score'))
+          let active = false
+          if (isOrganiser && 'match' in link) {
+            const o = link as OrganiserNav
+            active =
+              o.match === 'prefix'
+                ? pathname === o.href || pathname.startsWith(`${o.href}/`)
+                : pathname === o.href
+          } else {
+            active =
+              pathname === link.href ||
+              (!isOrganiser && link.href === '/judge/dashboard' && pathname.startsWith('/judge/score'))
+          }
           return (
             <NavLink
               key={link.href}
