@@ -21,11 +21,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Plus, Search, Mail, UserX, Send, CheckCircle2, Clock, AlertTriangle, Pencil } from 'lucide-react'
+import { Plus, Search, Mail, UserX, Send, CheckCircle2, Clock, AlertTriangle, Pencil, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { DEMO_SCORES } from '@/lib/demo-data'
 import { useOrganiserDemoStore } from '@/store/organiserDemoStore'
 import { sendMagicLinkToEmail } from '@/lib/auth/send-magic-link'
+import { parseCsvText } from '@/lib/csv'
+import type { Judge } from '@/lib/types'
 
 export default function OrganiserJudgesPage() {
   const judges = useOrganiserDemoStore((s) => s.judges)
@@ -41,6 +43,8 @@ export default function OrganiserJudgesPage() {
   const [editJudge, setEditJudge] = useState({ name: '', email: '' })
   const [sending, setSending] = useState<string | null>(null)
   const [inviteBusy, setInviteBusy] = useState(false)
+  const [csvImportOpen, setCsvImportOpen] = useState(false)
+  const [csvFile, setCsvFile] = useState<File | null>(null)
 
   const getJudgeStats = (judgeId: string) => {
     const assigns = assignments.filter((a) => a.judge_id === judgeId)
@@ -182,6 +186,72 @@ export default function OrganiserJudgesPage() {
     return j.is_active && stats.pct < 100
   })
 
+  // CSV Import for judges
+  const handleCsvImport = async () => {
+    if (!csvFile) {
+      toast.error('Please select a CSV file.')
+      return
+    }
+
+    try {
+      const text = await csvFile.text()
+      const matrix = parseCsvText(text)
+      
+      if (matrix.length < 2) {
+        toast.error('CSV file appears empty or invalid.')
+        return
+      }
+
+      const header = matrix[0].map(h => h.trim().toLowerCase())
+      const nameIdx = header.findIndex(h => h === 'name' || h === 'judge_name')
+      const emailIdx = header.findIndex(h => h === 'email' || h === 'judge_email')
+
+      if (nameIdx === -1 || emailIdx === -1) {
+        toast.error('CSV must include "name" and "email" columns.')
+        return
+      }
+
+      let imported = 0
+      let skipped = 0
+
+      for (let i = 1; i < matrix.length; i++) {
+        const row = matrix[i]
+        const name = row[nameIdx]?.trim()
+        const email = row[emailIdx]?.trim().toLowerCase()
+
+        if (!name || !email) {
+          skipped++
+          continue
+        }
+
+        // Check if judge with this email already exists
+        if (judges.some(j => j.email === email)) {
+          skipped++
+          continue
+        }
+
+        const newJudge: Judge = {
+          id: `judge-${Date.now()}-${i}`,
+          user_id: `user-${Date.now()}-${i}`,
+          competition_id: 'comp-2026',
+          name,
+          email,
+          is_active: true,
+          created_at: new Date().toISOString(),
+        }
+
+        addJudge(newJudge)
+        imported++
+      }
+
+      toast.success(`Imported ${imported} judge(s). Skipped ${skipped}.`)
+      setCsvFile(null)
+      setCsvImportOpen(false)
+    } catch (error) {
+      toast.error('Failed to parse CSV file. Please check the format.')
+    }
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -250,8 +320,11 @@ export default function OrganiserJudgesPage() {
               {sending === 'all' ? 'Sending...' : `Remind All (${needingReminder.length})`}
             </Button>
           )}
+          <Button size="sm" variant="outline" onClick={() => setCsvImportOpen(true)} className="gap-1.5 text-xs">
+            <Upload size={13} /> Import CSV
+          </Button>
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <Button size="sm" onClick={() => setAddOpen(true)} className="gap-1.5 text-xs bg-[#1D9E8B] hover:bg-[#0F6E56] text-white">
+            <Button size="sm" onClick={() => setAddOpen(true)} className="gap-1.5 text-xs bg-[#E85A14] hover:bg-[#C2410C] text-white">
               <Plus size={13} /> Invite Judge
             </Button>
             <DialogContent className="max-w-md">
@@ -446,6 +519,63 @@ export default function OrganiserJudgesPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* CSV Import Dialog */}
+      <Dialog open={csvImportOpen} onOpenChange={setCsvImportOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-[#1A2B3C]">Import Judges from CSV</DialogTitle>
+            <DialogDescription className="text-gray-600 text-sm">
+              Upload a CSV file with columns: <code className="bg-gray-100 px-1">name</code> and <code className="bg-gray-100 px-1">email</code>.
+              Each row will create a new judge.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label className="text-xs font-medium">CSV File</Label>
+              <Input
+                type="file"
+                accept=".csv"
+                onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
+                className="text-sm"
+              />
+              {csvFile && (
+                <p className="text-xs text-gray-500">Selected: {csvFile.name}</p>
+              )}
+            </div>
+            <div className="bg-[#FFF3EF] border border-orange-200 rounded-lg p-3">
+              <p className="text-xs text-[#1A2B3C] font-medium mb-2">CSV Format Example:</p>
+              <pre className="text-[10px] bg-white p-2 rounded border border-orange-100 overflow-x-auto">
+                name,email{'\n'}
+                Dr. Sarah Chen,sarah.chen@example.com{'\n'}
+                Prof. Marcus Tan,marcus.tan@example.com
+              </pre>
+            </div>
+            <div className="flex gap-2 justify-end pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setCsvFile(null)
+                  setCsvImportOpen(false)
+                }}
+                className="text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleCsvImport}
+                disabled={!csvFile}
+                className="text-xs bg-[#E85A14] hover:bg-[#C2410C] text-white"
+              >
+                <Upload size={12} className="mr-1.5" />
+                Import Judges
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

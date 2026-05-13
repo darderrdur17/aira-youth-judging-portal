@@ -368,3 +368,75 @@
   to { transform: translateY(0); opacity: 1; }
 }
 .count-up { animation: countUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ───────────────────────────────────────────────────────────
+   RESPONSIVE DESIGN UTILITIES
+   ─────────────────────────────────────────────────────────── */
+
+/* Mobile-first responsive containers */
+.responsive-padding {
+  @apply px-4 sm:px-6 lg:px-8;
+}
+
+.responsive-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4;
+}
+
+.responsive-flex {
+  @apply flex flex-col sm:flex-row gap-3;
+}
+
+/* Touch-friendly buttons on mobile */
+@media (max-width: 768px) {
+  button,
+  .btn,
+  a[role="button"] {
+    min-height: 44px; /* iOS recommended touch target */
+    min-width: 44px;
+  }
+  
+  /* Larger text for readability */
+  body {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Better spacing on mobile */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Stack cards vertically on mobile */
+  .card-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .tablet-two-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Prevent animation on reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

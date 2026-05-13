@@ -4,15 +4,48 @@ import { JUDGING_CRITERIA } from './types'
 /** Example PDF path for import templates (AgriSense AI demo file). */
 export const SAMPLE_TEAM_SUBMISSION_PDF = '/samples/projects/proj-001.pdf'
 
-export const DEMO_COMPETITION: Competition = {
-  id: 'comp-2026',
-  name: 'AI Ready ASEAN Youth Challenge 2026',
-  slug: 'airayc-2026',
-  logo_url: null,
-  deadline: '2026-04-15T04:00:00Z', // 15 April 2026 12:00 GMT+8
-  created_by: 'organiser-1',
-  created_at: '2026-01-05T00:00:00Z',
-}
+// Multiple sample competitions for different event types
+export const DEMO_COMPETITIONS: Competition[] = [
+  {
+    id: 'comp-2026',
+    name: 'AI Ready ASEAN Youth Challenge 2026',
+    slug: 'airayc-2026',
+    logo_url: null,
+    deadline: '2026-04-15T04:00:00Z', // 15 April 2026 12:00 GMT+8
+    created_by: 'organiser-1',
+    created_at: '2026-01-05T00:00:00Z',
+  },
+  {
+    id: 'comp-hack-2026',
+    name: 'Global Sustainability Hackathon 2026',
+    slug: 'sustainability-hack-2026',
+    logo_url: null,
+    deadline: '2026-06-30T23:59:59Z',
+    created_by: 'organiser-1',
+    created_at: '2026-03-01T00:00:00Z',
+  },
+  {
+    id: 'comp-innovation-2026',
+    name: 'Healthcare Innovation Awards 2026',
+    slug: 'healthcare-innovation-2026',
+    logo_url: null,
+    deadline: '2026-08-15T23:59:59Z',
+    created_by: 'organiser-1',
+    created_at: '2026-04-01T00:00:00Z',
+  },
+  {
+    id: 'comp-startup-2026',
+    name: 'University Startup Competition 2026',
+    slug: 'university-startup-2026',
+    logo_url: null,
+    deadline: '2026-09-30T23:59:59Z',
+    created_by: 'organiser-2',
+    created_at: '2026-05-01T00:00:00Z',
+  },
+]
+
+// Keep primary competition for backwards compatibility
+export const DEMO_COMPETITION: Competition = DEMO_COMPETITIONS[0]
 
 export const DEMO_CRITERIA: Criterion[] = JUDGING_CRITERIA.map((c, i) => ({
   ...c,
@@ -101,9 +134,93 @@ export const DEMO_PROJECTS: Project[] = [
     metadata: { team: 'GreenFuture', members: 2 },
     created_at: '2026-03-23T11:00:00Z',
   },
+  // Projects for Sustainability Hackathon
+  {
+    id: 'proj-101',
+    competition_id: 'comp-hack-2026',
+    name: 'Ocean Cleanup Bot',
+    country: 'Singapore',
+    pdf_url: null,
+    video_url: 'https://www.youtube.com/watch?v=ocean',
+    metadata: { team: 'CleanSeas', members: 4 },
+    created_at: '2026-05-15T10:00:00Z',
+  },
+  {
+    id: 'proj-102',
+    competition_id: 'comp-hack-2026',
+    name: 'Carbon Tracker App',
+    country: 'Malaysia',
+    pdf_url: null,
+    video_url: null,
+    metadata: { team: 'EcoTrack', members: 3 },
+    created_at: '2026-05-16T11:00:00Z',
+  },
+  {
+    id: 'proj-103',
+    competition_id: 'comp-hack-2026',
+    name: 'Solar Panel Optimizer',
+    country: 'Thailand',
+    pdf_url: null,
+    video_url: 'https://www.youtube.com/watch?v=solar',
+    metadata: { team: 'SunPower', members: 2 },
+    created_at: '2026-05-17T09:00:00Z',
+  },
+  // Projects for Healthcare Innovation
+  {
+    id: 'proj-201',
+    competition_id: 'comp-innovation-2026',
+    name: 'AI Diagnosis Assistant',
+    country: 'Philippines',
+    pdf_url: null,
+    video_url: 'https://www.youtube.com/watch?v=diagnosis',
+    metadata: { team: 'HealthTech', members: 5 },
+    created_at: '2026-06-10T10:00:00Z',
+  },
+  {
+    id: 'proj-202',
+    competition_id: 'comp-innovation-2026',
+    name: 'Telemedicine Platform',
+    country: 'Indonesia',
+    pdf_url: null,
+    video_url: null,
+    metadata: { team: 'TeleCare', members: 4 },
+    created_at: '2026-06-11T11:00:00Z',
+  },
+  {
+    id: 'proj-203',
+    competition_id: 'comp-innovation-2026',
+    name: 'Mental Health Chatbot',
+    country: 'Vietnam',
+    pdf_url: null,
+    video_url: 'https://www.youtube.com/watch?v=mental',
+    metadata: { team: 'MindCare', members: 3 },
+    created_at: '2026-06-12T12:00:00Z',
+  },
+  // Projects for University Startup
+  {
+    id: 'proj-301',
+    competition_id: 'comp-startup-2026',
+    name: 'Campus Food Delivery',
+    country: 'Singapore',
+    pdf_url: null,
+    video_url: null,
+    metadata: { team: 'QuickBite', members: 4 },
+    created_at: '2026-07-05T10:00:00Z',
+  },
+  {
+    id: 'proj-302',
+    competition_id: 'comp-startup-2026',
+    name: 'Student Marketplace',
+    country: 'Malaysia',
+    pdf_url: null,
+    video_url: 'https://www.youtube.com/watch?v=marketplace',
+    metadata: { team: 'CampusTrade', members: 3 },
+    created_at: '2026-07-06T11:00:00Z',
+  },
 ]
 
 export const DEMO_JUDGES: Judge[] = [
+  // Judges for AI Ready ASEAN Youth Challenge
   {
     id: 'judge-001',
     user_id: 'user-judge-1',
@@ -130,6 +247,54 @@ export const DEMO_JUDGES: Judge[] = [
     email: 'priya.nair@example.com',
     is_active: true,
     created_at: '2026-04-01T00:00:00Z',
+  },
+  // Judges for Sustainability Hackathon
+  {
+    id: 'judge-101',
+    user_id: 'user-judge-101',
+    competition_id: 'comp-hack-2026',
+    name: 'Dr. James Liu',
+    email: 'james.liu@example.com',
+    is_active: true,
+    created_at: '2026-05-01T00:00:00Z',
+  },
+  {
+    id: 'judge-102',
+    user_id: 'user-judge-102',
+    competition_id: 'comp-hack-2026',
+    name: 'Ms. Anna Wong',
+    email: 'anna.wong@example.com',
+    is_active: true,
+    created_at: '2026-05-01T00:00:00Z',
+  },
+  // Judges for Healthcare Innovation
+  {
+    id: 'judge-201',
+    user_id: 'user-judge-201',
+    competition_id: 'comp-innovation-2026',
+    name: 'Dr. Michael Rodriguez',
+    email: 'michael.rodriguez@example.com',
+    is_active: true,
+    created_at: '2026-06-01T00:00:00Z',
+  },
+  {
+    id: 'judge-202',
+    user_id: 'user-judge-202',
+    competition_id: 'comp-innovation-2026',
+    name: 'Prof. Lisa Kim',
+    email: 'lisa.kim@example.com',
+    is_active: true,
+    created_at: '2026-06-01T00:00:00Z',
+  },
+  // Judges for University Startup
+  {
+    id: 'judge-301',
+    user_id: 'user-judge-301',
+    competition_id: 'comp-startup-2026',
+    name: 'Mr. David Zhang',
+    email: 'david.zhang@example.com',
+    is_active: true,
+    created_at: '2026-07-01T00:00:00Z',
   },
 ]
 
